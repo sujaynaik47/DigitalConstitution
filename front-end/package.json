@@ -1,0 +1,15 @@
+{
+  "name": "minor-frontend",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.6.1",
+    "jsdom": "^21.1.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  }
+}
