@@ -1,0 +1,52 @@
+# Switch between branches
+git checkout main     # Go to main branch
+git checkout varun    # Go to your branch
+
+# Update your branch with main's changes
+git checkout varun    # Ensure you're on your branch
+git merge main        # Get main's changes into your branch
+
+# Create new branch
+git checkout -b new-branch-name
+
+
+# Start all services
+docker-compose up
+
+# Rebuild and start
+docker-compose up --build
+
+# Stop all services
+docker-compose down
+
+# Start specific service
+docker-compose up backend
+
+
+# Run backend tests
+cd back-end
+npm test
+
+# Run frontend tests
+cd front-end
+npm test
+
+# Run ML tests
+cd machine-learning
+python -m pytest
+
+# Before starting work
+git checkout varun
+git merge main          # Get latest changes
+
+# After making changes
+git add .               # Stage changes
+git commit -m "message" # Commit changes
+git push origin varun   # Push to your branch
+
+# Create Pull Request
+# Use GitHub UI to create PR from varun -> main
+
+git status          # Check changed files
+git branch          # See all branches
+git log --oneline   # View commit history
