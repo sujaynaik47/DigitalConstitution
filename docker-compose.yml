@@ -1,13 +1,37 @@
-version: '3.8'
 services:
   backend:
     build:
       context: ./back-end
     ports:
       - "5000:5000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./back-end:/app
+      - /app/node_modules
+    depends_on:
+      - ml-service
 
   frontend:
     build:
       context: ./front-end
     ports:
       - "3000:80"
+    volumes:
+      - ./front-end:/usr/share/nginx/html
+    depends_on:
+      - backend
+
+  ml-service:
+    build:
+      context: ./machine-learning
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./machine-learning:/app
+    environment:
+      - PYTHON_ENV=development
+
+networks:
+  default:
+    name: cse-d5-network
