@@ -4,9 +4,9 @@ import LoggedInView from './components/LoggedInView.jsx';
 
 export default function App() {
   const [user, setUser] = useState(null); // null = logged out, {object} = logged in
-  const [isAuthReady, setIsAuthReady] = useState(false); 
+  const [isAuthReady, setIsAuthReady] = useState(false); // Used to show a loading spinner
 
-  // Simulate checking for a user session on 
+  // Simulate checking for a user session on load
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsAuthReady(true);
