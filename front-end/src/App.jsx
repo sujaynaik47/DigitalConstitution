@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage.jsx';
 import LoggedInView from './components/LoggedInView.jsx';
+import Ap from './components/Home.jsx';
 
 export default function App() {
   const [user, setUser] = useState(null); // null = logged out, {object} = logged in
@@ -38,7 +39,7 @@ export default function App() {
 
   return (
     <>
-      {user ? <LoggedInView user={user} onLogout={handleLogout} /> : <LoginPage onLogin={handleLogin} />}
+      {user ? <Ap user={user} onLogout={handleLogout} /> : <LoginPage onLogin={handleLogin} />}
     </>
   );
 }

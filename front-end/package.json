@@ -7,11 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
-    ,"test": "vitest"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "firebase": "^12.4.0",
+    "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
