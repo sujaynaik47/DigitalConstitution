@@ -5,7 +5,7 @@ const opinionSchema = new mongoose.Schema(
     // Auto-generated unique post identifier
     postId: {
       type: String,
-      required: true,
+    //   required: true,
       unique: true,
       index: true
     },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import ProfileView from './ProfileView.jsx';
 
 // --- Icon Component ---
 const Icon = ({ name, className = "" }) => {
@@ -271,7 +272,7 @@ const Footer = () => {
 };
 
 // --- Main App Component ---
-const App = () => {
+const App = ({ user }) => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
       <NavBar />
@@ -281,7 +282,7 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/trending" element={<ActivitySection type="trending" />} />
             <Route path="/my-activity" element={<ActivitySection type="my-activity" />} />
-            <Route path="/profile" element={<div>Profile Page</div>} />
+            <Route path="/profile" element={<ProfileView initialUser={user} />} />
             <Route path="/vote" element={<div>Vote Page</div>} />
             <Route path="/posts" element={<div>Posts Page</div>} />
           </Routes>

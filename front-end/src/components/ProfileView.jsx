@@ -1,6 +1,7 @@
 // ProfileView.jsx
 
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const ProfileView = ({ initialUser = null }) => {
   const [open, setOpen] = useState(false);
@@ -14,17 +15,20 @@ const ProfileView = ({ initialUser = null }) => {
   const [changing, setChanging] = useState(false);
   const [changeMessage, setChangeMessage] = useState('');
 
-  // Open modal when hash becomes #profile
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Open modal when hash becomes #profile or when route is /profile
   useEffect(() => {
-    const checkHash = () => {
-      if (window.location.hash === '#profile') {
+    const checkOpen = () => {
+      if (window.location.hash === '#profile' || location.pathname === '/profile') {
         setOpen(true);
       }
     };
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
-  }, []);
+    checkOpen();
+    window.addEventListener('hashchange', checkOpen);
+    return () => window.removeEventListener('hashchange', checkOpen);
+  }, [location]);
 
   // Load user data when modal opens
   useEffect(() => {
@@ -91,8 +95,15 @@ const ProfileView = ({ initialUser = null }) => {
 
   const close = () => {
     setOpen(false);
-    if (window.location.hash === '#profile') {
-      history.replaceState(null, '', window.location.pathname + window.location.search);
+    try {
+      if (window.location.hash === '#profile') {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } else if (location.pathname === '/profile') {
+        // navigate back to home (replace so it doesn't add a history entry)
+        navigate('/', { replace: true });
+      }
+    } catch {
+      // fallback: just close
     }
   };
 
