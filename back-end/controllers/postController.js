@@ -33,7 +33,6 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('userId', 'name email')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ posts });
@@ -48,8 +47,7 @@ const getPostById = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const post = await Post.findOne({ postId })
-      .populate('userId', 'name email');
+    const post = await Post.findOne({ postId });
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -147,12 +145,35 @@ const getPostsByArticle = async (req, res) => {
     const { articleNumber } = req.params;
 
     const posts = await Post.find({ articleNumber })
-      .populate('userId', 'name email')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ posts });
   } catch (err) {
     console.error('Get posts by article error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get user's own posts
+const getMyPosts = async (req, res) => {
+  try {
+    const userId = req.user._id; // Get authenticated user's ID
+
+    const posts = await Post.getPostsByUserId(userId);
+    res.status(200).json({ posts });
+  } catch (err) {
+    console.error('Get my posts error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get trending posts
+const getTrendingPosts = async (req, res) => {
+  try {
+    const trendingPosts = await Post.getTrendingPosts();
+    res.status(200).json({ posts: trendingPosts });
+  } catch (err) {
+    console.error('Get trending posts error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -164,5 +185,7 @@ module.exports = {
   agreeWithPost,
   disagreeWithPost,
   getPostStats,
-  getPostsByArticle
+  getPostsByArticle,
+  getMyPosts,
+  getTrendingPosts
 };

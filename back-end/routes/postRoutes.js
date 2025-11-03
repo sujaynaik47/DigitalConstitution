@@ -7,7 +7,9 @@ const {
   agreeWithPost,
   disagreeWithPost,
   getPostStats,
-  getPostsByArticle
+  getPostsByArticle,
+  getMyPosts,
+  getTrendingPosts
 } = require('../controllers/postController');
 
 // Middleware to check authentication (implement based on your auth system)
@@ -40,5 +42,11 @@ router.post('/posts/:postId/disagree', authenticate, disagreeWithPost);
 
 // Get post statistics
 router.get('/posts/:postId/stats', getPostStats);
+
+// Get user's own posts (requires authentication)
+router.get('/my-posts', authenticate, getMyPosts);
+
+// Get trending posts
+router.get('/trending-posts', getTrendingPosts);
 
 module.exports = router;

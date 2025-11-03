@@ -130,5 +130,43 @@ opinionSchema.statics.getPostStats = async function(postId) {
   };
 };
 
+// Static method to get user's posts
+opinionSchema.statics.getPostsByUserId = async function(userId) {
+  return await this.find({ userId })
+    .sort({ createdAt: -1 });
+};
+
+// Static method to get trending posts
+opinionSchema.statics.getTrendingPosts = async function() {
+  const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  
+  return await this.aggregate([
+    // Match posts with responses in last 48 hours
+    {
+      $match: {
+        'responses.respondedAt': { $gte: fortyEightHoursAgo }
+      }
+    },
+    // Add fields for recent response counts
+    {
+      $addFields: {
+        recentResponses: {
+          $size: {
+            $filter: {
+              input: '$responses',
+              as: 'response',
+              cond: { $gte: ['$$response.respondedAt', fortyEightHoursAgo] }
+            }
+          }
+        }
+      }
+    },
+    // Sort by total recent responses
+    {
+      $sort: { recentResponses: -1 }
+    }
+  ]).exec();
+};
+
 const Opinion = mongoose.model("Opinion", opinionSchema);
 module.exports = Opinion;
