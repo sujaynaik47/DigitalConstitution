@@ -158,36 +158,44 @@ router.post("/google-login", async (req, res) => {
 // --- 2. Expert/Lawmaker Registration (Signup) ---
 // POST /api/users/register
 router.post("/register", async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
+  try {
+    const { name, email, password, googleId } = req.body;
 
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: "All fields are required for registration." });
-        }
-
-        if (await User.findOne({ email })) {
-            return res.status(409).json({ message: "User already exists. Please login." });
-        }
-
-        // NOTE: The password hashing would happen in the userModel.js pre-save hook.
-        const newUser = new User({
-            name,
-            email,
-            password, // MOCK: In production, this would be a HASHED string
-            role: 'Expert', // Default role for manual registration
-        });
-        await newUser.save();
-
-        res.status(201).json({
-            message: "Registration successful. Please log in.",
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role,
-        });
-    } catch (error) {
-        console.error("Expert registration error:", error);
-        res.status(500).json({ message: "Server error" });
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required for registration." });
     }
+
+    // Check for existing user
+    if (await User.findOne({ email })) {
+      return res.status(409).json({ message: "User already exists. Please login." });
+    }
+
+    // ✅ Build user data dynamically
+    const userData = {
+      name,
+      email,
+      password, // (In real apps, hash before saving)
+      role: "Expert",
+    };
+
+    // ⚠ Add googleId only if provided (for safety)
+    if (googleId) {
+      userData.googleId = googleId;
+    }
+
+    const newUser = new User(userData);
+    await newUser.save();
+
+    res.status(201).json({
+      message: "Registration successful. Please log in.",
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
+  } catch (error) {
+    console.error("Expert registration error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // --- 3. Expert/Lawmaker Login ---

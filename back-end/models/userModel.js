@@ -73,11 +73,12 @@ const userSchema = new mongoose.Schema(
     },
     // Used primarily for Google Sign-In authentication
     googleId: {
-      type: String,
-      required: false, // Optional for expert users
-      unique: true,
-      sparse: true, // Allows multiple documents to have a null googleId
-    },
+      type: String,
+      required: false, 
+      unique: true,     // <-- This is the problem
+      sparse: true,   // <-- This is the solution
+    },
+
     picture: {
       type: String, // profile image from Google
     },
