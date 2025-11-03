@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
-// --- Icon Component (Placeholder) ---
-// Using lucide-react names, represented here by basic symbols for simplicity
+// --- Icon Component ---
 const Icon = ({ name, className = "" }) => {
   const icons = {
     users: "👥",
@@ -10,48 +10,136 @@ const Icon = ({ name, className = "" }) => {
     trendingUp: "🔥",
     bookOpen: "📖",
     user: "👤",
-    vote:"🗳️",
+    vote: "🗳️",
   };
   return <span className={`text-3xl ${className}`}>{icons[name] || '?'}</span>;
 };
 
-// --- Navbar Component ---
+// --- Posts Display Component ---
+const PostsDisplay = ({ posts, type }) => {
+  if (!posts || posts.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-600">No posts found in {type}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 my-6">
+      {posts.map((post) => (
+        <div key={post.postId} className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-sm text-gray-500">User ID: {post.userId}</p>
+              <p className="text-sm text-gray-500">Post ID: {post.postId}</p>
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold mb-2">{post.articleTitle}</h3>
+          <p className="text-gray-600 mb-4">{post.content}</p>
+          <div className="flex justify-between items-center text-sm text-gray-500">
+            <p>Article: {post.articleNumber}</p>
+            <div className="flex gap-4">
+              <span>👍 {post.agreeCount}</span>
+              <span>👎 {post.disagreeCount}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// --- Activity Section Component ---
+const ActivitySection = ({ type }) => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const endpoint = type === 'my-activity' ? 
+          'http://localhost:5000/api/my-posts' : 
+          'http://localhost:5000/api/trending-posts';
+        
+        const response = await fetch(endpoint, {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch posts');
+        const data = await response.json();
+        setPosts(data.posts || []);
+      } catch (err) {
+        setError(err.message);
+        console.error('Fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [type]);
+
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (error) return <div className="text-center py-10 text-red-600">{error}</div>;
+  
+  return <PostsDisplay posts={posts} type={type === 'my-activity' ? 'My Activity' : 'Trending'} />;
+};
+
+// --- NavBar Component ---
 const NavBar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [currentPath, setCurrentPath] = useState('/');
+  
   const links = [
-    { name: 'Trending', icon: 'trendingUp', href: '#trending' },
-    { name: 'Vote', icon: 'vote', href: '#Vote' },
-    { name: 'Posts', icon: 'clipboardList', href: '#Posts' },
-    { name: 'My Activity', icon: 'messageSquare', href: '#activity' },
-    { name: 'Profile', icon: 'user', href: '#profile' },
+    { name: 'Trending', icon: 'trendingUp', path: '/trending' },
+    { name: 'Vote', icon: 'vote', path: '/vote' },
+    { name: 'Posts', icon: 'clipboardList', path: '/posts' },
+    { name: 'My Activity', icon: 'messageSquare', path: '/my-activity' },
+    { name: 'Profile', icon: 'user', path: '/profile' },
   ];
+
+  useEffect(() => {
+    setCurrentPath(location.pathname);
+  }, [location]);
+
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
   
   return (
     <header className="bg-blue-800 shadow-2xl sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo/Title */}
           <div className="flex-shrink-0">
-            <a href="#" className="flex items-center space-x-2 text-white text-xl font-bold">
+            <button 
+              onClick={() => navigate('/')} 
+              className="flex items-center space-x-2 text-white text-xl font-bold"
+            >
               <Icon name="bookOpen" className="text-2xl text-orange-400" />
               <span>Digital Platform</span>
-            </a>
+            </button>
           </div>
           
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
             {links.map((link) => (
-              <a 
-                key={link.name} 
-                href={link.href} 
-                className="flex items-center space-x-2 text-white text-sm font-medium px-3 py-2 rounded-lg transition duration-150 hover:bg-blue-700 hover:text-white"
+              <button
+                key={link.name}
+                onClick={() => handleNavigation(link.path)}
+                className={`flex items-center space-x-2 text-white text-sm font-medium px-3 py-2 rounded-lg transition duration-150 hover:bg-blue-700 hover:text-white ${
+                  currentPath === link.path ? 'bg-blue-700' : ''
+                }`}
               >
                 <Icon name={link.icon} className="text-base" />
                 <span>{link.name}</span>
-              </a>
+              </button>
             ))}
           </nav>
           
-          {/* Mobile Menu Icon (Placeholder) */}
           <button className="md:hidden text-white hover:text-gray-200">
              <span className="text-2xl">☰</span>
           </button>
@@ -106,13 +194,34 @@ const StatsSection = () => {
   );
 };
 
+// --- HomePage Component ---
+const HomePage = () => {
+  return (
+    <>
+      <HeroSection />
+      <StatsSection />
+      <div className="bg-blue-900 text-white p-10 rounded-2xl max-w-5xl mx-auto my-12 flex flex-col md:flex-row items-center justify-between shadow-xl border-l-8 border-green-500">
+        <div>
+          <h3 className="text-3xl font-bold mb-2">
+            New: Freedom of Information Act Review
+          </h3>
+          <p className="text-lg text-blue-200">
+            Join the highest-priority discussion this month.
+          </p>
+        </div>
+        <button className="mt-6 md:mt-0 bg-orange-500 text-white font-semibold py-3 px-6 rounded-full transition duration-300 hover:bg-orange-600 shadow-md">
+          View Details & Comment
+        </button>
+      </div>
+    </>
+  );
+};
+
 // --- Footer Component ---
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white p-8 mt-16 shadow-inner">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
-        
-        {/* About */}
         <div>
           <h4 className="font-bold text-lg mb-4 text-orange-400">Platform</h4>
           <ul className="space-y-2 text-gray-400">
@@ -122,7 +231,6 @@ const Footer = () => {
           </ul>
         </div>
         
-        {/* Support */}
         <div>
           <h4 className="font-bold text-lg mb-4 text-orange-400">Support</h4>
           <ul className="space-y-2 text-gray-400">
@@ -132,7 +240,6 @@ const Footer = () => {
           </ul>
         </div>
         
-        {/* Legal */}
         <div>
           <h4 className="font-bold text-lg mb-4 text-orange-400">Legal</h4>
           <ul className="space-y-2 text-gray-400">
@@ -142,19 +249,17 @@ const Footer = () => {
           </ul>
         </div>
         
-        {/* Social */}
         <div className="flex flex-col space-y-3">
-            <h4 className="font-bold text-lg text-orange-400">Connect</h4>
-            <div className="flex space-x-4">
-                <a href="#" className="text-2xl hover:text-blue-400 transition duration-150">T</a>
-                <a href="#" className="text-2xl hover:text-blue-400 transition duration-150">F</a>
-                <a href="#" className="text-2xl hover:text-blue-400 transition duration-150">in</a>
-            </div>
-            <p className="text-xs pt-4 text-gray-500">
-                A non-partisan, government-backed initiative.
-            </p>
+          <h4 className="font-bold text-lg text-orange-400">Connect</h4>
+          <div className="flex space-x-4">
+            <a href="#" className="text-2xl hover:text-blue-400 transition duration-150">T</a>
+            <a href="#" className="text-2xl hover:text-blue-400 transition duration-150">F</a>
+            <a href="#" className="text-2xl hover:text-blue-400 transition duration-150">in</a>
+          </div>
+          <p className="text-xs pt-4 text-gray-500">
+            A non-partisan, government-backed initiative.
+          </p>
         </div>
-
       </div>
       <div className="text-center mt-12 pt-6 border-t border-gray-700">
         <p className="text-xs text-gray-500">
@@ -170,30 +275,18 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
       <NavBar />
-      
       <main className="flex-grow">
         <div className="container mx-auto px-4">
-          <HeroSection />
-          <StatsSection />
-
-          {/* Featured Content CTA */}
-          <div className="bg-blue-900 text-white p-10 rounded-2xl max-w-5xl mx-auto my-12 flex flex-col md:flex-row items-center justify-between shadow-xl border-l-8 border-green-500">
-            <div>
-              <h3 className="text-3xl font-bold mb-2">
-                New: Freedom of Information Act Review
-              </h3>
-              <p className="text-lg text-blue-200">
-                Join the highest-priority discussion this month.
-              </p>
-            </div>
-            <button className="mt-6 md:mt-0 bg-orange-500 text-white font-semibold py-3 px-6 rounded-full transition duration-300 hover:bg-orange-600 shadow-md">
-              View Details & Comment
-            </button>
-          </div>
-
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/trending" element={<ActivitySection type="trending" />} />
+            <Route path="/my-activity" element={<ActivitySection type="my-activity" />} />
+            <Route path="/profile" element={<div>Profile Page</div>} />
+            <Route path="/vote" element={<div>Vote Page</div>} />
+            <Route path="/posts" element={<div>Posts Page</div>} />
+          </Routes>
         </div>
       </main>
-      
       <Footer />
     </div>
   );

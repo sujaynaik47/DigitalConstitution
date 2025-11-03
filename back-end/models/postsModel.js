@@ -164,6 +164,19 @@ opinionSchema.statics.getTrendingPosts = async function() {
     // Sort by total recent responses
     {
       $sort: { recentResponses: -1 }
+    },
+    // Project only needed fields
+    {
+      $project: {
+        userId: 1,
+        postId: 1,
+        articleNumber: 1,
+        articleTitle: 1,
+        content: 1,
+        agreeCount: 1,
+        disagreeCount: 1,
+        recentResponses: 1
+      }
     }
   ]).exec();
 };

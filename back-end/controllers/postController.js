@@ -33,6 +33,7 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
+      .select('userId postId articleNumber articleTitle content agreeCount disagreeCount')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ posts });
@@ -159,7 +160,9 @@ const getMyPosts = async (req, res) => {
   try {
     const userId = req.user._id; // Get authenticated user's ID
 
-    const posts = await Post.getPostsByUserId(userId);
+    const posts = await Post.find({ userId })
+      .select('userId postId articleNumber articleTitle content agreeCount disagreeCount')
+      .sort({ createdAt: -1 });
     res.status(200).json({ posts });
   } catch (err) {
     console.error('Get my posts error:', err);
