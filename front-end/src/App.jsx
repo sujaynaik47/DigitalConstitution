@@ -1,5 +1,8 @@
+//App.jsx
+
 import React, { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage.jsx';
+import ProfileView from './components/ProfileView.jsx';
 
 import Ap from './components/Home.jsx';
 
@@ -40,6 +43,7 @@ export default function App() {
   return (
     <>
       {user ? <Ap user={user} onLogout={handleLogout} /> : <LoginPage onLogin={handleLogin} />}
+      <ProfileView initialUser={user} />
     </>
   );
 }
