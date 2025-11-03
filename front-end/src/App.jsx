@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage.jsx';
-import LoggedInView from './components/LoggedInView.jsx';
+
 import Ap from './components/Home.jsx';
 
 export default function App() {

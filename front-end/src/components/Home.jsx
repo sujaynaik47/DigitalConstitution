@@ -10,6 +10,7 @@ const Icon = ({ name, className = "" }) => {
     trendingUp: "🔥",
     bookOpen: "📖",
     user: "👤",
+    vote:"🗳️",
   };
   return <span className={`text-3xl ${className}`}>{icons[name] || '?'}</span>;
 };
@@ -18,7 +19,8 @@ const Icon = ({ name, className = "" }) => {
 const NavBar = () => {
   const links = [
     { name: 'Trending', icon: 'trendingUp', href: '#trending' },
-    { name: 'Discussions', icon: 'clipboardList', href: '#discussions' },
+    { name: 'Vote', icon: 'vote', href: '#Vote' },
+    { name: 'Posts', icon: 'clipboardList', href: '#Posts' },
     { name: 'My Activity', icon: 'messageSquare', href: '#activity' },
     { name: 'Profile', icon: 'user', href: '#profile' },
   ];
