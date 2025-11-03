@@ -1,57 +1,153 @@
+// // // const express = require("express");
+// // // const User = require("../models/userModel");
+
+// // // const router = express.Router();
+
+// // // // ✅ Get all users
+// // // router.get("/", async (req, res) => {
+// // //   try {
+// // //     const users = await User.find();
+// // //     res.json(users);
+// // //   } catch (error) {
+// // //     res.status(500).json({ message: error.message });
+// // //   }
+// // // });
+
+// // // // ✅ Add new user
+// // // router.post("/", async (req, res) => {
+// // //   const { name, email, password } = req.body;
+// // //   try {
+// // //     const user = new User({ name, email, password });
+// // //     await user.save();
+// // //     res.status(201).json(user);
+// // //   } catch (error) {
+// // //     res.status(400).json({ message: error.message });
+// // //   }
+// // // });
+
+// // // module.exports = router;
+// // // routes/userRoutes.js
+// // const express = require("express");
+// // const router = express.Router();
+// // const User = require("../models/userModel");
+
+// // // POST /api/google-login
+// // router.post("/google-login", async (req, res) => {
+// //   try {
+// //     const { name, email, googleId, picture } = req.body;
+
+// //     if (!email || !googleId) {
+// //       return res.status(400).json({ message: "Missing required fields" });
+// //     }
+
+// //     // Check if user already exists
+// //     let user = await User.findOne({ email });
+
+// //     if (!user) {
+// //       // Create new user
+// //       user = new User({ name, email, googleId, picture });
+// //       await user.save();
+// //     }
+
+// //     res.status(200).json({
+// //       message: "User logged in successfully",
+// //       user,
+// //     });
+// //   } catch (error) {
+// //     console.error("Google login error:", error);
+// //     res.status(500).json({ message: "Server error" });
+// //   }
+// // });
+
+// // module.exports = router;
+
 // const express = require("express");
+// const router = express.Router();
 // const User = require("../models/userModel");
 
-// const router = express.Router();
-
-// // ✅ Get all users
-// router.get("/", async (req, res) => {
+// // POST /api/users/google-login
+// router.post("/google-login", async (req, res) => {
 //   try {
-//     const users = await User.find();
-//     res.json(users);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+//     const { name, email, picture } = req.body;
 
-// // ✅ Add new user
-// router.post("/", async (req, res) => {
-//   const { name, email, password } = req.body;
-//   try {
-//     const user = new User({ name, email, password });
-//     await user.save();
-//     res.status(201).json(user);
+//     if (!email) {
+//       return res.status(400).json({ message: "Email is required" });
+//     }
+
+//     // Check if user already exists
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       // Create a new user (no googleId since frontend doesn't send it)
+//       user = new User({
+//         name,
+//         email,
+//         picture,
+//         googleId: email, // optional fallback — ensures uniqueness
+//       });
+//       await user.save();
+//     }
+
+//     res.status(200).json({
+//       message: "User logged in successfully",
+//       user,
+//     });
 //   } catch (error) {
-//     res.status(400).json({ message: error.message });
+//     console.error("Google login error:", error);
+//     res.status(500).json({ message: "Server error" });
 //   }
 // });
 
 // module.exports = router;
-// routes/userRoutes.js
+
+
+
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
+// NOTE: In a real application, you would require your hashing library here:
+// const bcrypt = require('bcrypt');
 
-// POST /api/google-login
+// Helper function to mock password check (replace with bcrypt.compare in production)
+const mockPasswordCheck = (storedPassword, providedPassword) => {
+    // In a real app, you'd use: return bcrypt.compare(providedPassword, storedPassword);
+    return storedPassword === providedPassword;
+};
+
+// --- 1. Google Login / Registration (Citizen Flow) ---
+// POST /api/users/google-login
 router.post("/google-login", async (req, res) => {
   try {
-    const { name, email, googleId, picture } = req.body;
+    const { name, email, picture } = req.body;
 
-    if (!email || !googleId) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
 
-    // Check if user already exists
+    // Check if user already exists by email
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create new user
-      user = new User({ name, email, googleId, picture });
+      // Create a new user (Citizen role, associated with a mock googleId)
+      user = new User({
+        name,
+        email,
+        picture,
+        googleId: email, // Using email as a mock unique ID
+        role: 'Citizen',
+      });
       await user.save();
+    } else if (!user.googleId) {
+        // If the email exists but doesn't have a Google ID (i.e., it's an Expert account)
+        return res.status(403).json({ message: "This email is registered as an Expert account. Please use the Expert login tab." });
     }
 
+    // Success response
     res.status(200).json({
       message: "User logged in successfully",
-      user,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     });
   } catch (error) {
     console.error("Google login error:", error);
@@ -59,5 +155,81 @@ router.post("/google-login", async (req, res) => {
   }
 });
 
-module.exports = router;
+// --- 2. Expert/Lawmaker Registration (Signup) ---
+// POST /api/users/register
+router.post("/register", async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
 
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "All fields are required for registration." });
+        }
+
+        if (await User.findOne({ email })) {
+            return res.status(409).json({ message: "User already exists. Please login." });
+        }
+
+        // NOTE: The password hashing would happen in the userModel.js pre-save hook.
+        const newUser = new User({
+            name,
+            email,
+            password, // MOCK: In production, this would be a HASHED string
+            role: 'Expert', // Default role for manual registration
+        });
+        await newUser.save();
+
+        res.status(201).json({
+            message: "Registration successful. Please log in.",
+            name: newUser.name,
+            email: newUser.email,
+            role: newUser.role,
+        });
+    } catch (error) {
+        console.error("Expert registration error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// --- 3. Expert/Lawmaker Login ---
+// POST /api/users/login
+router.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required." });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "Invalid credentials." });
+        }
+
+        // Check if the account has a password set (i.e., is not a Google-only account)
+        if (!user.password) {
+            return res.status(401).json({ message: "This email is associated with a Citizen account. Please use Google Sign-In." });
+        }
+
+        // MOCK: Compare the provided password with the stored password
+        const isMatch = mockPasswordCheck(user.password, password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials." });
+        }
+
+        // Success response
+        res.status(200).json({
+            message: "Login successful",
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        });
+
+    } catch (error) {
+        console.error("Expert login error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+module.exports = router;
