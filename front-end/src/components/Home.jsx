@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import ProfileView from './ProfileView.jsx';
+
+import TrendingPosts from "./TrendingPosts";
+import MyActivity from "./MyActivity";
+import ProfileView from "./ProfileView";
+import OpinionFeed from "./OpinionFeed";
+import PostsList from "./PostsList";
 
 // --- Icon Component ---
 const Icon = ({ name, className = "" }) => {
@@ -278,14 +283,14 @@ const App = ({ user }) => {
       <NavBar />
       <main className="flex-grow">
         <div className="container mx-auto px-4">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/trending" element={<ActivitySection type="trending" />} />
-            <Route path="/my-activity" element={<ActivitySection type="my-activity" />} />
-            <Route path="/profile" element={<ProfileView initialUser={user} />} />
-            <Route path="/vote" element={<div>Vote Page</div>} />
-            <Route path="/posts" element={<div>Posts Page</div>} />
-          </Routes>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/trending" element={<TrendingPosts />} />
+      <Route path="/my-activity" element={<MyActivity />} />
+      <Route path="/profile" element={<ProfileView initialUser={user} />} />
+      <Route path="/vote" element={<OpinionFeed />} />
+      <Route path="/posts" element={<PostsList />} />
+    </Routes>
         </div>
       </main>
       <Footer />
