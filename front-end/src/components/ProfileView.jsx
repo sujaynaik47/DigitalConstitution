@@ -45,7 +45,7 @@ const ProfileView = ({ initialUser = null }) => {
           setError('Unable to load user info.');
         }
       } catch (err) {
-        console.log("Error from here",err)
+        console.log("Error from here", err);
         setError('Unable to load user info.');
       }
     }
@@ -134,11 +134,13 @@ const ProfileView = ({ initialUser = null }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="col-span-2 bg-gray-50 p-6 rounded-lg">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl">
-                    {user?.name?.[0]?.toUpperCase() ?? 'U'}
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-xs break-all p-1">
+                    {/* Show first 4 chars of UUID in avatar */}
+                    {user?.uuid ? user.uuid.slice(0, 4).toUpperCase() : 'UUID'}
                   </div>
                   <div>
-                    <div className="text-lg font-semibold">{user?.name ?? 'Unknown User'}</div>
+                    {/* Show full UUID instead of name */}
+                    <div className="text-sm font-mono break-all">{user?.uuid ?? 'No UUID available'}</div>
                     <div className="text-sm text-gray-500">{user?.email ?? 'No email available'}</div>
                   </div>
                 </div>

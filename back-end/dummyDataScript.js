@@ -1,127 +1,137 @@
-// // dummyDataScript.js
+// dummyDataScript.js
 
-require("dotenv").config(); // load .env variables
+require("dotenv").config({ path: __dirname + "/.env" });
 const mongoose = require("mongoose");
-const User = require("./models/userModel"); // adjust path if needed
+const User = require("./models/userModel"); // Adjust path if needed
 
+// --- Custom Short UUID Generator ---
+function generateShortUUID() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// --- MongoDB Connection URI ---
 const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI is undefined. Check your .env file.");
+  process.exit(1);
+}
 
 async function seedUsers() {
   try {
     await mongoose.connect(MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // Clear old users (optional)
+    // Optional: clear existing users for clean test run
     await User.deleteMany({});
-    console.log("🗑️ Cleared old User documents");
+    console.log("🧹 Cleared existing users collection");
 
-    const roles = ["Citizen", "Expert", "Lawmaker"];
-    const insertedUsers = [];
+    // --- 10 Dummy Users ---
+    const users = [
+      {
+        name: "Dr. Jane Lawson",
+        email: "jane.lawson@example.com",
+        password: "12345678",
+        role: "Expert",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Michael Torres",
+        email: "michael.torres@lawfirm.org",
+        password: "12345678",
+        role: "Expert",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Alex Green",
+        email: "alex.green@gmail.com",
+        googleId: "alex.green@gmail.com",
+        role: "Citizen",
+        picture: "https://example.com/alex-green.png",
+        password: "12345678",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Priya Mehta",
+        email: "priya.mehta@gmail.com",
+        googleId: "priya.mehta@gmail.com",
+        role: "Citizen",
+        picture: "https://example.com/priya.png",
+        password: "12345678",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Samuel Carter",
+        email: "samuel.carter@lawfirm.org",
+        password: "12345678",
+        role: "Expert",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Linda Park",
+        email: "linda.park@example.com",
+        password: "12345678",
+        role: "Expert",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Carlos Rivera",
+        email: "carlos.rivera@gmail.com",
+        googleId: "carlos.rivera@gmail.com",
+        role: "Citizen",
+        picture: "https://example.com/carlos.png",
+        password: "12345678",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Emily Chen",
+        email: "emily.chen@gmail.com",
+        googleId: "emily.chen@gmail.com",
+        role: "Citizen",
+        picture: "https://example.com/emily.png",
+        password: "12345678",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Robert Evans",
+        email: "robert.evans@lawfirm.org",
+        password: "12345678",
+        role: "Expert",
+        uuid: generateShortUUID(),
+      },
+      {
+        name: "Sofia Rossi",
+        email: "sofia.rossi@gmail.com",
+        googleId: "sofia.rossi@gmail.com",
+        role: "Citizen",
+        picture: "https://example.com/sofia.png",
+        password: "12345678",
+        uuid: generateShortUUID(),
+      },
+    ];
 
-    for (let i = 1; i <= 10; i++) {
-      const user = new User({
-        name: `User${i}`,
-        email: `u${i}@x.io`,
-        password: "12341234",
-        role: roles[i % 3],
-      });
+    // Insert users
+    const createdUsers = await User.insertMany(users);
+    console.log("✅ Inserted users successfully!\n");
 
-      await user.save();
-      insertedUsers.push(user);
-      console.log(`👤 Inserted: ${user.name}`);
-    }
+    createdUsers.forEach((u, index) => {
+      console.log(
+        `${index + 1}. ${u.name} (${u.role}) -> ${u.email} | UUID: ${u.uuid}`
+      );
+    });
 
-    console.log("🎉 All dummy users inserted:", insertedUsers);
-
-    process.exit(0);
+    console.log("\n🎉 All users seeded successfully!");
   } catch (err) {
     console.error("❌ Error seeding users:", err);
-    process.exit(1);
+  } finally {
+    await mongoose.disconnect();
+    console.log("🔌 Disconnected from MongoDB");
   }
 }
 
 seedUsers();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// require("dotenv").config(); // load .env variables
-// const mongoose = require("mongoose");
-// const Opinion = require("./models/postsModel"); // adjust path if needed
-
-// const MONGO_URI = process.env.MONGO_URI;
-
-// async function seed() {
-//   try {
-//     await mongoose.connect(MONGO_URI);
-//     console.log("✅ Connected to MongoDB");
-
-//     // Clear old data (optional)
-//     await Opinion.deleteMany({});
-//     console.log("🗑️ Cleared old Opinion documents");
-
-//     // Dummy user ObjectIds (replace with real User IDs if you have them)
-//     const user1 = new mongoose.Types.ObjectId();
-//     const user2 = new mongoose.Types.ObjectId();
-//     const user3 = new mongoose.Types.ObjectId();
-
-//     const dummyOpinions = [
-//       {
-//         userId: user1,
-//         articleNumber: "Article 14",
-//         articleTitle: "Equality before Law",
-//         content: "I believe Article 14 ensures fairness and justice for all citizens.",
-//       },
-//       {
-//         userId: user2,
-//         articleNumber: "Article 19",
-//         articleTitle: "Freedom of Speech",
-//         content: "Freedom of speech is essential, but it must be balanced with responsibility.",
-//       },
-//       {
-//         userId: user3,
-//         articleNumber: "Article 21",
-//         articleTitle: "Right to Life",
-//         content: "The right to life is the foundation of all other rights.",
-//       },
-//     ];
-
-//     const inserted = [];
-
-//     // Save each opinion individually so pre('save') runs
-//     for (const data of dummyOpinions) {
-//       const opinion = new Opinion(data);
-//       await opinion.save(); // triggers pre('save') and generates postId
-//       inserted.push(opinion);
-//     }
-
-//     console.log("🎉 Inserted dummy opinions:", inserted);
-
-//     process.exit(0);
-//   } catch (err) {
-//     console.error("❌ Error seeding data:", err);
-//     process.exit(1);
-//   }
-// }
-
-// seed();
