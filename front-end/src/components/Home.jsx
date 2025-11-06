@@ -6,7 +6,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import TrendingPosts from "./TrendingPosts";
 import MyActivity from "./MyActivity";
 import ProfileView from "./ProfileView";
-import OpinionFeed from "./OpinionFeed";
+import Vote from "./Vote";
 import PostsList from "./PostsList";
 
 // --- Icon Component ---
@@ -290,7 +290,7 @@ const App = ({ user }) => {
           <Route path="/trending" element={<TrendingPosts />} />
           <Route path="/my-activity" element={<MyActivity />} />
           <Route path="/profile" element={<ProfileView initialUser={user} />} />
-          <Route path="/vote" element={<OpinionFeed />} />
+          <Route path="/vote" element={<Vote />} />
           <Route path="/posts" element={<PostsList />} />
         </Routes>
         </div>
