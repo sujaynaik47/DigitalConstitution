@@ -33,19 +33,19 @@ async function seedUsers() {
 
     // --- 10 Dummy Users ---
     const users = [
-      {
-        name: "Dr. Jane Lawson",
-        email: "jane.lawson@example.com",
-        password: "12345678",
-        role: "Expert",
-        uuid: generateShortUUID(),
-      },
+        {
+          name: "Dr. Jane Lawson",
+          email: "jane.lawson@example.com",
+          password: "12345678",
+          role: "Expert",
+          userId: generateShortUUID(),
+        },
       {
         name: "Michael Torres",
         email: "michael.torres@lawfirm.org",
         password: "12345678",
         role: "Expert",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Alex Green",
@@ -54,7 +54,7 @@ async function seedUsers() {
         role: "Citizen",
         picture: "https://example.com/alex-green.png",
         password: "12345678",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Priya Mehta",
@@ -63,21 +63,21 @@ async function seedUsers() {
         role: "Citizen",
         picture: "https://example.com/priya.png",
         password: "12345678",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Samuel Carter",
         email: "samuel.carter@lawfirm.org",
         password: "12345678",
         role: "Expert",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Linda Park",
         email: "linda.park@example.com",
         password: "12345678",
         role: "Expert",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Carlos Rivera",
@@ -86,7 +86,7 @@ async function seedUsers() {
         role: "Citizen",
         picture: "https://example.com/carlos.png",
         password: "12345678",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Emily Chen",
@@ -95,14 +95,14 @@ async function seedUsers() {
         role: "Citizen",
         picture: "https://example.com/emily.png",
         password: "12345678",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Robert Evans",
         email: "robert.evans@lawfirm.org",
         password: "12345678",
         role: "Expert",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
       {
         name: "Sofia Rossi",
@@ -111,7 +111,7 @@ async function seedUsers() {
         role: "Citizen",
         picture: "https://example.com/sofia.png",
         password: "12345678",
-        uuid: generateShortUUID(),
+        userId: generateShortUUID(),
       },
     ];
 
@@ -121,7 +121,7 @@ async function seedUsers() {
 
     createdUsers.forEach((u, index) => {
       console.log(
-        `${index + 1}. ${u.name} (${u.role}) -> ${u.email} | UUID: ${u.uuid}`
+        `${index + 1}. ${u.name} (${u.role}) -> ${u.email} | userId: ${u.userId}`
       );
     });
 

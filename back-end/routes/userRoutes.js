@@ -8,7 +8,7 @@ const mockPasswordCheck = (storedPassword, providedPassword) => {
   return storedPassword === providedPassword;
 };
 
-// Mask email but NOT uuid
+// Mask email but NOT userId
 function maskEmailOrGoogleId(value) {
   if (!value || value.length < 10) return "****";
   return "****" + value.slice(4, 8) + "**" + value.slice(10);
@@ -20,7 +20,7 @@ function formatUser(user) {
     email: maskEmailOrGoogleId(user.email),
     googleId: user.googleId ? maskEmailOrGoogleId(user.googleId) : undefined,
     role: user.role,
-    uuid: user.uuid, // <-- full unique ID
+    userId: user.userId, // <-- full unique 8-char ID
     picture: user.picture,
   };
 }

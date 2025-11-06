@@ -135,12 +135,12 @@ const ProfileView = ({ initialUser = null }) => {
               <div className="col-span-2 bg-gray-50 p-6 rounded-lg">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-xs break-all p-1">
-                    {/* Show first 4 chars of UUID in avatar */}
-                    {user?.uuid ? user.uuid.slice(0, 4).toUpperCase() : 'UUID'}
+                    {/* Show first 4 chars of userId in avatar */}
+                    {user?.userId ? user.userId.slice(0, 4).toUpperCase() : 'USER'}
                   </div>
                   <div>
-                    {/* Show full UUID instead of name */}
-                    <div className="text-sm font-mono break-all">{user?.uuid ?? 'No UUID available'}</div>
+                    {/* Show full userId instead of name */}
+                    <div className="text-sm font-mono break-all">{user?.userId ?? 'No userId available'}</div>
                     <div className="text-sm text-gray-500">{user?.email ?? 'No email available'}</div>
                   </div>
                 </div>
