@@ -1,9 +1,14 @@
-//userModel.js
-
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 
 const userSchema = new mongoose.Schema(
   {
+    uuid: {
+      type: String,
+      default: uuidv4, // generates a new UUID when user is created
+      unique: true,    // ensures no duplicates
+      immutable: true, // prevents changes after creation
+    },
     name: {
       type: String,
       required: true,
@@ -13,42 +18,27 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    // Required for expert/lawmaker accounts
     password: {
       type: String,
-      required: false, // Optional for Google users
+      required: false,
     },
-    // Used primarily for Google Sign-In authentication
     googleId: {
-      type: String,
-      required: false, 
-      unique: true,     // <-- This is the problem
-      sparse: true,   // <-- This is the solution
-    },
-
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+    },
     picture: {
-      type: String, // profile image from Google
+      type: String,
     },
     role: {
-        type: String,
-        enum: ['Citizen', 'Expert', 'Lawmaker'],
-        default: 'Citizen',
-    }
+      type: String,
+      enum: ["Citizen", "Expert", "Lawmaker"],
+      default: "Citizen",
+    },
   },
   { timestamps: true }
 );
 
-// NOTE: In a real application, you would add a pre-save hook here to
-// hash the password before saving (e.g., using bcrypt).
-/*
-userSchema.pre('save', async function(next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 10);
-    }
-    next();
-});
-*/
-
 const User = mongoose.model("User", userSchema);
 module.exports = User;
-
