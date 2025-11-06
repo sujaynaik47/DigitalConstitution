@@ -1,0 +1,41 @@
+/*
+==================== HOW NAVIGATION & RENDERING WORK ====================
+
+1️⃣ When a nav button (e.g. “Trending”) is clicked:
+    → handleNavigation(path) is called → navigate('/trending') runs.
+    → This uses React Router’s useNavigate() to update the browser history
+      and change the current URL path in React Router’s internal state.
+
+2️⃣ Router detects the location change:
+    → React Router updates its context (the "current location").
+    → The <Routes> component inside App re-evaluates all <Route> paths.
+    → It finds the matching route (<Route path="/trending" ... />)
+      and renders that route’s element (<TrendingPosts />).
+
+3️⃣ Component mounting & unmounting:
+    → <TrendingPosts /> is now mounted (its function runs and JSX is rendered).
+    → When navigating to another route later, it will unmount automatically.
+    → This process happens only for the component inside <Routes>.
+
+4️⃣ Why NavBar (and Footer) stay visible:
+    → In App.jsx, <NavBar /> and <Footer /> are placed *outside* of <Routes>.
+    → React Router only swaps the components inside <Routes>.
+    → So NavBar and Footer remain mounted and persistent across pages.
+
+5️⃣ Active button highlighting:
+    → NavBar uses useLocation() to read the current path.
+    → When location changes, useEffect updates currentPath.
+    → The button whose path matches currentPath gets the “active” styling
+      (e.g., background color changes).
+
+6️⃣ React rendering behavior:
+    → React only re-renders parts of the DOM that actually changed.
+    → Since only the <Routes> output changes on navigation,
+      NavBar and Footer DOM remain untouched (they’re not re-rendered).
+
+🧠 In short:
+Clicking a button → navigate('/trending') → Router updates location →
+<Routes> swaps the visible page component → NavBar stays mounted the entire time.
+
+=========================================================================
+*/
