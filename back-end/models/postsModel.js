@@ -1,3 +1,5 @@
+//postsModel.js
+
 const mongoose = require("mongoose");
 
 const opinionSchema = new mongoose.Schema(

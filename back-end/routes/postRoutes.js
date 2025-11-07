@@ -1,3 +1,5 @@
+// routes/postsRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const {
@@ -8,48 +10,82 @@ const {
   disagreeWithPost,
   getPostStats,
   getPostsByArticle,
+  addOpinionToPost,
   getMyPosts,
   getTrendingPosts
 } = require('../controllers/postController');
 
-// Middleware to check authentication (implement based on your auth system)
+const User = require('../models/userModel');
+const Post = require('../models/postsModel'); // renamed from Opinion to Post for clarity
+
+// ----------------------
+// Middleware: Authentication
+// ----------------------
 const authenticate = (req, res, next) => {
-  // Example: Check if user is in session/token
-  // For now, assuming you have user in req.user after login
+  // Implement your authentication logic here
+  // For example, if you're using sessions or JWTs:
   if (!req.user) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
   next();
 };
 
-// Create a new post (requires authentication)
-router.post('/posts', authenticate, createPost);
+// ----------------------
+// ROUTES
+// ----------------------
+
+// Create a new post
+router.post('/', authenticate, createPost);
 
 // Get all posts
-router.get('/posts', getAllPosts);
+router.get('/', getAllPosts);
 
-// Get single post by postId
-router.get('/posts/:postId', getPostById);
+// Get a single post by ID
+router.get('/:postId', getPostById);
 
 // Get posts by article number
-router.get('/posts/article/:articleNumber', getPostsByArticle);
+router.get('/article/:articleNumber', getPostsByArticle);
 
-// Agree with a post (requires authentication)
-router.post('/posts/:postId/agree', authenticate, agreeWithPost);
+// Agree with a post
+router.post('/:postId/agree', authenticate, agreeWithPost);
 
-// Disagree with a post (requires authentication)
-router.post('/posts/:postId/disagree', authenticate, disagreeWithPost);
+// Disagree with a post
+router.post('/:postId/disagree', authenticate, disagreeWithPost);
 
-// Add free-text opinion/comment to a post (requires authentication)
-router.post('/posts/:postId/opinion', authenticate, require('../controllers/postController').addOpinionToPost);
+// Add a comment/opinion to a post
+router.post('/:postId/opinion', authenticate, addOpinionToPost);
 
-// Get post statistics
-router.get('/posts/:postId/stats', getPostStats);
+// Get statistics for a post
+router.get('/:postId/stats', getPostStats);
 
-// Get user's own posts (requires authentication)
-router.get('/my-posts', authenticate, getMyPosts);
+// Get all posts by a specific userId (for MyActivity)
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find the user by userId (not MongoDB _id)
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Fetch all posts created by this user
+    const posts = await Post.find({ userId: user._id })
+      .sort({ createdAt: -1 }) // newest first
+      .lean();
+
+    return res.status(200).json({
+      posts,
+      count: posts.length,
+      userId,
+    });
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    return res.status(500).json({ message: 'Server error while fetching posts' });
+  }
+});
 
 // Get trending posts
-router.get('/trending-posts', getTrendingPosts);
+router.get('/trending', getTrendingPosts);
 
 module.exports = router;
