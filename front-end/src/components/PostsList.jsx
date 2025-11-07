@@ -45,11 +45,11 @@ const PostsList = () => {
   const handleAgreeClick = (postId) => callVote(postId, 'agree');
   const handleDisagreeClick = (postId) => callVote(postId, 'disagree');
 
-  const handleOpinionClick = async (postId) => {
-    const text = window.prompt('Share your opinion (short):');
+  const handlePostClick = async (postId) => {
+    const text = window.prompt('Share your post/comment (short):');
     if (!text) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/posts/${postId}/opinion`, {
+      const res = await fetch(`http://localhost:5000/api/posts/${postId}/post`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -57,9 +57,9 @@ const PostsList = () => {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
-      alert('Opinion submitted');
+      alert('Post submitted');
     } catch (err) {
-      alert('Failed to submit opinion: ' + (err.message || err));
+      alert('Failed to submit post: ' + (err.message || err));
     }
   };
 
@@ -87,10 +87,10 @@ const PostsList = () => {
                 Agree
               </button>
               <button 
-                onClick={() => handleOpinionClick(post.postId)}
+                onClick={() => handlePostClick(post.postId)}
                 className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-150 hover:bg-gray-300"
               >
-                My opinion on this
+                My post/comment on this
               </button>
               <button 
                 onClick={() => handleDisagreeClick(post.postId)}

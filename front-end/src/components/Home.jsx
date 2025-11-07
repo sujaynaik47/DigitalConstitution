@@ -165,7 +165,7 @@ const HeroSection = () => {
         Shape the Future of Our <span className="text-orange-600">Digital Constitution</span>
       </h1>
       <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-        Engage directly with proposed amendments, share your informed opinions, and collaborate with lawmakers and verified experts.
+  Engage directly with proposed amendments, share your informed posts, and collaborate with lawmakers and verified experts.
       </p>
       <div className="flex justify-center space-x-4">
         <button className="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 hover:bg-green-700 transform hover:scale-105">
@@ -184,7 +184,7 @@ const StatsSection = () => {
   const stats = [
     { label: "Registered Citizens", value: "1.5M+", icon: "users", color: "text-blue-600" },
     { label: "Amendments Under Discussion", value: "42", icon: "clipboardList", color: "text-orange-600" },
-    { label: "Total Opinions Submitted", value: "75K+", icon: "messageSquare", color: "text-green-600" },
+  { label: "Total Posts Submitted", value: "75K+", icon: "messageSquare", color: "text-green-600" },
   ];
   
   return (

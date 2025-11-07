@@ -21,7 +21,7 @@ function formatUser(user) {
     email: maskEmailOrGoogleId(user.email),
     role: user.role || "Citizen",
     userId: user.userId || user._id.toString().slice(-8), // Fallback to last 8 chars of _id
-    opinionsCount: user.opinions ? user.opinions.length : 0
+    postsCount: user.posts ? user.posts.length : 0
   };
 
   // Only add googleId if it exists

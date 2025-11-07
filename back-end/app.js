@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
-const postRoutes = require("./routes/postRoutes");
 const changePasswordController = require("./controllers/passwordChangeThroughProfile");
 
 dotenv.config();
@@ -24,8 +23,11 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
+const postRoutes = require("./routes/postRoutes");
+
 app.use("/api/users", userRoutes);
-app.use("/api", postRoutes);
+// Mount post routes under /api/posts so front-end calls to /api/posts/* resolve correctly
+app.use("/api/posts", postRoutes);
 app.post('/api/change-password', changePasswordController);
 
 // MongoDB Connection

@@ -154,7 +154,7 @@ const MyActivity = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-600 font-semibold">
-                      💬 {post.opinions?.length || 0}
+                      💬 {post.posts?.length || 0}
                     </span>
                     <span className="text-xs text-gray-500">Comments</span>
                   </div>

@@ -10,7 +10,7 @@ const {
   disagreeWithPost,
   getPostStats,
   getPostsByArticle,
-  addOpinionToPost,
+  addPostToPost,
   getMyPosts,
   getTrendingPosts
 } = require('../controllers/postController');
@@ -52,8 +52,8 @@ router.post('/:postId/agree', authenticate, agreeWithPost);
 // Disagree with a post
 router.post('/:postId/disagree', authenticate, disagreeWithPost);
 
-// Add a comment/opinion to a post
-router.post('/:postId/opinion', authenticate, addOpinionToPost);
+// Add a comment/post to a post
+router.post('/:postId/post', authenticate, addPostToPost);
 
 // Get statistics for a post
 router.get('/:postId/stats', getPostStats);

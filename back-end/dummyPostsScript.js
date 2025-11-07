@@ -2,7 +2,7 @@
 // Script to insert 3 posts for each user into the posts collection
 
 const mongoose = require('mongoose');
-const Opinion = require('./models/postsModel'); // Adjust path as needed
+const Post = require('./models/postsModel'); // Adjust path as needed
 const User = require('./models/userModel'); // Adjust path as needed
 require("dotenv").config({ path: __dirname + "/.env" });
 
@@ -12,17 +12,18 @@ const MONGO_URI = process.env.MONGO_URI;
 
 // User data with their userIds
 const users = [
-  { name: 'Dr. Jane Lawson', userId: 'PJZ5MA1L', type: 'Expert' },
-  { name: 'Michael Torres', userId: 'BSZ7M4ED', type: 'Expert' },
-  { name: 'Alex Green', userId: 'RYQP9CFV', type: 'Citizen' },
-  { name: 'Priya Mehta', userId: 'WG0H7KAE', type: 'Citizen' },
-  { name: 'Samuel Carter', userId: 'XQRKSGVA', type: 'Expert' },
-  { name: 'Linda Park', userId: '0VYLOHWS', type: 'Expert' },
-  { name: 'Carlos Rivera', userId: 'L25PT672', type: 'Citizen' },
-  { name: 'Emily Chen', userId: 'TQH9851E', type: 'Citizen' },
-  { name: 'Robert Evans', userId: '0X5TBPUS', type: 'Expert' },
-  { name: 'Sofia Rossi', userId: 'QFMWINK6', type: 'Citizen' }
+  { name: 'Dr. Jane Lawson', userId: '3K1FQPDC', type: 'Expert', email: 'jane.lawson@example.com' },
+  { name: 'Michael Torres', userId: 'S69T2402', type: 'Expert', email: 'michael.torres@lawfirm.org' },
+  { name: 'Alex Green', userId: 'X9SZ7INB', type: 'Citizen', email: 'alex.green@gmail.com' },
+  { name: 'Priya Mehta', userId: 'F3F2IV3P', type: 'Citizen', email: 'priya.mehta@gmail.com' },
+  { name: 'Samuel Carter', userId: 'J2H7UTS3', type: 'Expert', email: 'samuel.carter@lawfirm.org' },
+  { name: 'Linda Park', userId: 'DXCWWQAL', type: 'Expert', email: 'linda.park@example.com' },
+  { name: 'Carlos Rivera', userId: 'MMP82DD0', type: 'Citizen', email: 'carlos.rivera@gmail.com' },
+  { name: 'Emily Chen', userId: 'Z1D400C9', type: 'Citizen', email: 'emily.chen@gmail.com' },
+  { name: 'Robert Evans', userId: 'AQVBSC1M', type: 'Expert', email: 'robert.evans@lawfirm.org' },
+  { name: 'Sofia Rossi', userId: 'CZ9BSB3Q', type: 'Citizen', email: 'sofia.rossi@gmail.com' }
 ];
+
 
 // Sample articles from Indian Constitution
 const articles = [
@@ -112,9 +113,9 @@ async function seedPosts() {
     await mongoose.connect(MONGO_URI);
     console.log('Connected successfully!');
     
-    console.log('\nClearing existing posts...');
-    await Opinion.deleteMany({});
-    console.log('Existing posts cleared.');
+  console.log('\nClearing existing posts...');
+  await Post.deleteMany({});
+  console.log('Existing posts cleared.');
     
     console.log('\nGenerating posts for users...\n');
     
@@ -134,7 +135,7 @@ async function seedPosts() {
       
       // Create and save posts one by one to trigger pre-save hook
       for (const postData of postsData) {
-        const post = new Opinion(postData);
+        const post = new Post(postData);
         const savedPost = await post.save();
         insertedPosts.push(savedPost);
       }
@@ -148,7 +149,7 @@ async function seedPosts() {
     console.log('\n✨ Database seeding completed successfully!');
     
     // Display summary
-    const totalPosts = await Opinion.countDocuments();
+  const totalPosts = await Post.countDocuments();
     console.log(`\nTotal posts in database: ${totalPosts}`);
     
   } catch (error) {

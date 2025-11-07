@@ -233,9 +233,9 @@ const getTrendingPosts = async (req, res) => {
 };
 
 // ----------------------
-// Add a free-text opinion/comment to a post
+// Add a free-text post/comment to a post (stored as nested posts)
 // ----------------------
-const addOpinionToPost = async (req, res) => {
+const addPostToPost = async (req, res) => {
   try {
     const { postId } = req.params;
     const { text } = req.body;
@@ -246,12 +246,12 @@ const addOpinionToPost = async (req, res) => {
     const post = await Post.findOne({ postId });
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    post.opinions.push({ userId, text });
+    post.posts.push({ userId, text });
     await post.save();
 
-    res.status(200).json({ message: 'Opinion added', postId: post.postId });
+    res.status(200).json({ message: 'Post added', postId: post.postId });
   } catch (err) {
-    console.error('Add opinion error:', err);
+    console.error('Add post error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -269,5 +269,5 @@ module.exports = {
   getPostsByArticle,
   getMyPosts,
   getTrendingPosts,
-  addOpinionToPost,
+  addPostToPost,
 };

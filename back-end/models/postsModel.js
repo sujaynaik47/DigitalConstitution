@@ -2,7 +2,7 @@
 
 const mongoose = require("mongoose");
 
-const opinionSchema = new mongoose.Schema(
+const postSchema = new mongoose.Schema(
   {
     // Auto-generated unique post identifier
     postId: {
@@ -71,8 +71,8 @@ const opinionSchema = new mongoose.Schema(
       }
     }]
     ,
-    // Store free-text opinions/comments by users
-    opinions: [{
+    // Store free-text posts/comments by users
+    posts: [{
       userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       text: { type: String, maxlength: 2000 },
       createdAt: { type: Date, default: Date.now }
@@ -84,7 +84,7 @@ const opinionSchema = new mongoose.Schema(
 );
 
 // Compound index to quickly check if user has already responded
-opinionSchema.index({ postId: 1, 'responses.userId': 1 });
+postSchema.index({ postId: 1, 'responses.userId': 1 });
 
 // Pre-save hook to generate unique postId
 // Helper to generate an 8-char uppercase alphanumeric postId
@@ -98,7 +98,7 @@ function generateShortId() {
 }
 
 // Ensure a unique 8-char postId is assigned before saving
-opinionSchema.pre('save', async function(next) {
+postSchema.pre('save', async function(next) {
   if (this.postId) return next();
 
   let newId;
@@ -107,7 +107,7 @@ opinionSchema.pre('save', async function(next) {
   while (exists) {
     newId = generateShortId();
     // eslint-disable-next-line no-await-in-loop
-    const found = await mongoose.models.Opinion.findOne({ postId: newId });
+    const found = await mongoose.models.Post.findOne({ postId: newId });
     if (!found) exists = false;
   }
 
@@ -116,12 +116,12 @@ opinionSchema.pre('save', async function(next) {
 });
 
 // Method to check if user has already responded to this post
-opinionSchema.methods.hasUserResponded = function(userId) {
+postSchema.methods.hasUserResponded = function(userId) {
   return this.responses.some(r => r.userId.toString() === userId.toString());
 };
 
 // Method to add agree response
-opinionSchema.methods.addAgree = async function(userId) {
+postSchema.methods.addAgree = async function(userId) {
   if (this.hasUserResponded(userId)) {
     throw new Error('User has already responded to this post');
   }
@@ -133,7 +133,7 @@ opinionSchema.methods.addAgree = async function(userId) {
 };
 
 // Method to add disagree response
-opinionSchema.methods.addDisagree = async function(userId) {
+postSchema.methods.addDisagree = async function(userId) {
   if (this.hasUserResponded(userId)) {
     throw new Error('User has already responded to this post');
   }
@@ -145,7 +145,7 @@ opinionSchema.methods.addDisagree = async function(userId) {
 };
 
 // Static method to get post statistics
-opinionSchema.statics.getPostStats = async function(postId) {
+postSchema.statics.getPostStats = async function(postId) {
   const post = await this.findOne({ postId });
   if (!post) return null;
   
@@ -158,13 +158,13 @@ opinionSchema.statics.getPostStats = async function(postId) {
 };
 
 // Static method to get user's posts
-opinionSchema.statics.getPostsByUserId = async function(userId) {
+postSchema.statics.getPostsByUserId = async function(userId) {
   return await this.find({ userId })
     .sort({ createdAt: -1 });
 };
 
 // Static method to get trending posts
-opinionSchema.statics.getTrendingPosts = async function() {
+postSchema.statics.getTrendingPosts = async function() {
   // Use 40 hours window as requested
   const fortyHoursAgo = new Date(Date.now() - 40 * 60 * 60 * 1000);
 
@@ -209,5 +209,5 @@ opinionSchema.statics.getTrendingPosts = async function() {
   ]).exec();
 };
 
-const Opinion = mongoose.model("Opinion", opinionSchema);
-module.exports = Opinion;
+const Post = mongoose.model("Post", postSchema);
+module.exports = Post;
