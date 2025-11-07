@@ -181,6 +181,29 @@ const getTrendingPosts = async (req, res) => {
   }
 };
 
+// Add a free-text opinion/comment to a post (tagged by postId)
+const addOpinionToPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { text } = req.body;
+    const userId = req.user && req.user._id;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const post = await Post.findOne({ postId });
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    // push opinion
+    post.opinions.push({ userId, text });
+    await post.save();
+
+    res.status(200).json({ message: 'Opinion added', postId: post.postId });
+  } catch (err) {
+    console.error('Add opinion error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createPost,
   getAllPosts,
@@ -191,4 +214,6 @@ module.exports = {
   getPostsByArticle,
   getMyPosts,
   getTrendingPosts
+  ,
+  addOpinionToPost
 };

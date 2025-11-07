@@ -40,6 +40,9 @@ router.post('/posts/:postId/agree', authenticate, agreeWithPost);
 // Disagree with a post (requires authentication)
 router.post('/posts/:postId/disagree', authenticate, disagreeWithPost);
 
+// Add free-text opinion/comment to a post (requires authentication)
+router.post('/posts/:postId/opinion', authenticate, require('../controllers/postController').addOpinionToPost);
+
 // Get post statistics
 router.get('/posts/:postId/stats', getPostStats);
 

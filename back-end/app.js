@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
+const postRoutes = require("./routes/postRoutes");
 const changePasswordController = require("./controllers/passwordChangeThroughProfile");
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api", postRoutes);
 app.post('/api/change-password', changePasswordController);
 
 // MongoDB Connection

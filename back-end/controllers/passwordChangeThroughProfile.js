@@ -8,13 +8,13 @@ const mockPasswordCheck = (storedPassword, providedPassword) => {
 
 module.exports = async function changePasswordThroughProfile(req, res) {
   try {
-    const { email, currentPassword, newPassword } = req.body;
+    const { userId, currentPassword, newPassword } = req.body;
 
-    if (!email || !currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'email, currentPassword and newPassword are required.' });
+    if (!userId || !currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'userId, currentPassword and newPassword are required.' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     if (!user.password) {

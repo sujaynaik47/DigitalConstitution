@@ -5,7 +5,6 @@ const opinionSchema = new mongoose.Schema(
     // Auto-generated unique post identifier
     postId: {
       type: String,
-    //   required: true,
       unique: true,
       index: true
     },
@@ -69,6 +68,13 @@ const opinionSchema = new mongoose.Schema(
         default: Date.now
       }
     }]
+    ,
+    // Store free-text opinions/comments by users
+    opinions: [{
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      text: { type: String, maxlength: 2000 },
+      createdAt: { type: Date, default: Date.now }
+    }]
   },
   { 
     timestamps: true // Automatically adds createdAt and updatedAt
@@ -79,12 +85,31 @@ const opinionSchema = new mongoose.Schema(
 opinionSchema.index({ postId: 1, 'responses.userId': 1 });
 
 // Pre-save hook to generate unique postId
-opinionSchema.pre('save', async function(next) {
-  if (!this.postId) {
-    // Generate unique postId like "pld-123"
-    const count = await this.constructor.countDocuments();
-    this.postId = `pld-${count + 1}`;
+// Helper to generate an 8-char uppercase alphanumeric postId
+function generateShortId() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  return result;
+}
+
+// Ensure a unique 8-char postId is assigned before saving
+opinionSchema.pre('save', async function(next) {
+  if (this.postId) return next();
+
+  let newId;
+  let exists = true;
+
+  while (exists) {
+    newId = generateShortId();
+    // eslint-disable-next-line no-await-in-loop
+    const found = await mongoose.models.Opinion.findOne({ postId: newId });
+    if (!found) exists = false;
+  }
+
+  this.postId = newId;
   next();
 });
 
@@ -138,16 +163,11 @@ opinionSchema.statics.getPostsByUserId = async function(userId) {
 
 // Static method to get trending posts
 opinionSchema.statics.getTrendingPosts = async function() {
-  const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-  
+  // Use 40 hours window as requested
+  const fortyHoursAgo = new Date(Date.now() - 40 * 60 * 60 * 1000);
+
   return await this.aggregate([
-    // Match posts with responses in last 48 hours
-    {
-      $match: {
-        'responses.respondedAt': { $gte: fortyEightHoursAgo }
-      }
-    },
-    // Add fields for recent response counts
+    // Add field recentResponses = number of responses in last 40 hours
     {
       $addFields: {
         recentResponses: {
@@ -155,17 +175,23 @@ opinionSchema.statics.getTrendingPosts = async function() {
             $filter: {
               input: '$responses',
               as: 'response',
-              cond: { $gte: ['$$response.respondedAt', fortyEightHoursAgo] }
+              cond: { $gte: ['$$response.respondedAt', fortyHoursAgo] }
             }
           }
         }
       }
     },
-    // Sort by total recent responses
+    // Match posts that have any recentResponses (optional: include zeros if you want all)
+    {
+      $match: {
+        recentResponses: { $gt: 0 }
+      }
+    },
+    // Sort by total recent responses (agree + disagree in timeframe)
     {
       $sort: { recentResponses: -1 }
     },
-    // Project only needed fields
+    // Project useful fields
     {
       $project: {
         userId: 1,

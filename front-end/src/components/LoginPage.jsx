@@ -1,6 +1,5 @@
-// export default LoginPage;
+// LoginPage.jsx
 import React, { useEffect, useState } from 'react';
-
 
 // --- ICON COMPONENT ---
 const Icon = ({ name, className }) => {
@@ -67,8 +66,16 @@ const LoginPage = ({ onLogin }) => {
         return;
       }
 
-      setMessage(`Welcome, ${data.name || userObject.name}!`);
-      onLogin({ displayName: data.name || userObject.name, email: userObject.email });
+      // ✅ CRITICAL: Store the complete user object from backend (includes userId)
+      console.log("Backend response user data:", data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      setMessage(`Welcome, ${data.user.name || userObject.name}!`);
+      onLogin({ 
+        displayName: data.user.name || userObject.name, 
+        email: data.user.email,
+        userId: data.user.userId 
+      });
 
     } catch (error) {
       console.error("Google Login Error:", error);
@@ -126,8 +133,16 @@ const LoginPage = ({ onLogin }) => {
         const data = await res.json();
         if (!res.ok) return alert(data.message || "Login failed");
 
+        // ✅ CRITICAL: Store the complete user object from backend (includes userId)
+        console.log("Backend response user data:", data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
         setMessage("Login successful!");
-        onLogin({ displayName: data.name || "Expert User", email });
+        onLogin({ 
+          displayName: data.user.name || "Expert User", 
+          email: data.user.email,
+          userId: data.user.userId 
+        });
 
       } else if (expertMode === 'signup') {
         const confirmPassword = e.target['confirm-password'].value;
@@ -143,8 +158,16 @@ const LoginPage = ({ onLogin }) => {
         const data = await res.json();
         if (!res.ok) return alert(data.message || "Signup failed");
 
+        // ✅ CRITICAL: Store the complete user object from backend (includes userId)
+        console.log("Backend response user data:", data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
         setMessage("Registration successful!");
-        onLogin({ displayName: data.name || "New Expert", email });
+        onLogin({ 
+          displayName: data.user.name || "New Expert", 
+          email: data.user.email,
+          userId: data.user.userId 
+        });
       }
     } catch (err) {
       console.error(err);
