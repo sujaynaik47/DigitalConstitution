@@ -9,7 +9,7 @@ const User = require('../models/userModel');
 const createPost = async (req, res) => {
   try {
     const { articleNumber, articleTitle, content } = req.body;
-    const userId = req.user?._id; // assuming user is authenticated
+    const userId = req.user?._id;
 
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -44,7 +44,7 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('userId', 'userId') // populate readable userId
+      .populate('userId', 'userId')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -185,13 +185,13 @@ const getPostsByArticle = async (req, res) => {
 // ----------------------
 const getMyPosts = async (req, res) => {
   try {
-    const { userId } = req.params; // comes from /user/:userId route
+    const { userId } = req.params;
 
     if (!userId) {
       return res.status(400).json({ message: 'User ID required' });
     }
 
-    // Find user document first (since your User model stores userId as string)
+    // Find user document first
     const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -214,26 +214,84 @@ const getMyPosts = async (req, res) => {
 };
 
 // ----------------------
-// Get trending posts
+// Get trending posts (based on total interactions)
 // ----------------------
 const getTrendingPosts = async (req, res) => {
   try {
-    // Example logic: sort by (agreeCount - disagreeCount)
-    const trendingPosts = await Post.find()
-      .sort({ agreeCount: -1, disagreeCount: 1 })
-      .limit(10)
+    console.log('Fetching trending posts...');
+    
+    // Simple approach: calculate interaction score and sort
+    const posts = await Post.find()
       .populate('userId', 'userId')
       .lean();
 
-    res.status(200).json({ posts: trendingPosts });
+    console.log(`Found ${posts.length} total posts`);
+
+    // Calculate interaction score for each post
+    const postsWithScores = posts.map(post => {
+      const fortyHoursAgo = new Date(Date.now() - 40 * 60 * 60 * 1000);
+      
+      // Count recent interactions
+      let recentAgree = 0;
+      let recentDisagree = 0;
+      let recentPosts = 0;
+
+      // Count recent agrees
+      if (post.agreeList && Array.isArray(post.agreeList)) {
+        recentAgree = post.agreeList.filter(
+          item => item.timestamp && new Date(item.timestamp) >= fortyHoursAgo
+        ).length;
+      }
+
+      // Count recent disagrees
+      if (post.disagreeList && Array.isArray(post.disagreeList)) {
+        recentDisagree = post.disagreeList.filter(
+          item => item.timestamp && new Date(item.timestamp) >= fortyHoursAgo
+        ).length;
+      }
+
+      // Count recent posts/comments
+      if (post.posts && Array.isArray(post.posts)) {
+        recentPosts = post.posts.filter(
+          item => item.timestamp && new Date(item.timestamp) >= fortyHoursAgo
+        ).length;
+      }
+
+      const recentInteractions = recentAgree + recentDisagree + recentPosts;
+      const totalInteractions = (post.agreeCount || 0) + (post.disagreeCount || 0);
+
+      return {
+        ...post,
+        recentInteractions,
+        totalInteractions,
+        score: recentInteractions * 10 + totalInteractions // Weight recent activity higher
+      };
+    });
+
+    // Sort by score (descending) and take top 20
+    const trending = postsWithScores
+      .filter(p => p.recentInteractions > 0 || p.totalInteractions > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+
+    console.log(`Returning ${trending.length} trending posts`);
+
+    res.status(200).json({ 
+      posts: trending,
+      count: trending.length 
+    });
   } catch (err) {
     console.error('Get trending posts error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error stack:', err.stack);
+    res.status(500).json({ 
+      message: 'Server error',
+      error: err.message 
+    });
   }
 };
 
 // ----------------------
-// Add a free-text post/comment to a post (stored as nested posts)
+// Add a free-text post/comment to a post
 // ----------------------
 const addPostToPost = async (req, res) => {
   try {

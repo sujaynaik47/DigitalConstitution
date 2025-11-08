@@ -1,52 +1,46 @@
 import React, { useEffect, useState } from 'react';
+import { FaUser } from 'react-icons/fa';
+import PostCard from './PostCard';
 
 const MyActivity = () => {
   const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Get current user from localStorage
-    const getUserData = () => {
-      try {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          const userData = JSON.parse(userStr);
-          setUser(userData);
-          return userData;
-        }
-      } catch (err) {
-        console.error('Error loading user:', err);
-      }
-      return null;
-    };
-
     const fetchMyPosts = async () => {
-      const currentUser = getUserData();
-      
-      if (!currentUser || !currentUser.userId) {
-        setError('Please log in to view your posts');
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await fetch(`http://localhost:5000/api/posts/user/${currentUser.userId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
+        // Get current user from localStorage
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData || !userData.userId) {
+          setError('You must be logged in to view your activity');
+          setLoading(false);
+          return;
+        }
+        setUser(userData);
+
+        console.log('Fetching posts for user:', userData.userId);
+
+        const res = await fetch(`http://localhost:5000/api/posts/user/${userData.userId}`, {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${userData.token}`,
+            'Content-Type': 'application/json'
+          }
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch your posts');
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || `Status ${res.status}`);
         }
 
-        const data = await response.json();
+        const data = await res.json();
+        console.log('My posts data:', data);
         setPosts(data.posts || []);
       } catch (err) {
-        console.error('Error fetching posts:', err);
-        setError(err.message || 'Failed to load your posts');
+        console.error('Failed to load my posts', err);
+        setError(`Failed to load your posts: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -55,116 +49,116 @@ const MyActivity = () => {
     fetchMyPosts();
   }, []);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const callVote = async (postId, type) => {
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/posts/${postId}/${type}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
+
+      // Update local UI
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.postId !== postId) return p;
+          return {
+            ...p,
+            agreeCount: data.agreeCount,
+            disagreeCount: data.disagreeCount,
+            userVote: type,
+          };
+        })
+      );
+    } catch (err) {
+      alert('Could not register your response: ' + (err.message || err));
+    }
+  };
+
+  const handleAgreeClick = (postId) => callVote(postId, 'agree');
+  const handleDisagreeClick = (postId) => callVote(postId, 'disagree');
+
+  const handlePostClick = async (postId) => {
+    const text = window.prompt('Share your post/comment (short):');
+    if (!text) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/posts/${postId}/post`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
+      alert('Post submitted');
+    } catch (err) {
+      alert('Failed to submit post: ' + (err.message || err));
+    }
   };
 
   if (loading) {
     return (
-      <div className="py-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">💬 My Recent Activity</h2>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
+      <div className="py-8 text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <p className="mt-2 text-gray-600">Loading your posts…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="py-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">💬 My Recent Activity</h2>
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+      <div className="py-8 text-center text-red-600">
+        <p>{error}</p>
       </div>
     );
   }
 
   return (
     <div className="py-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">💬 My Recent Activity</h2>
+      <div className="flex items-center gap-3 mb-6 border-b pb-3">
+        <FaUser className="text-3xl text-blue-500" />
+        <h2 className="text-3xl font-bold text-gray-800">
+          My Activity
+        </h2>
+      </div>
       
-      {user && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-sm text-gray-600">Showing posts by</p>
-          <p className="font-semibold text-gray-800">{user.userId}</p>
-        </div>
-      )}
+      <p className="text-sm text-gray-600 mb-6">
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'} created by you
+      </p>
 
       {posts.length === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-          <p className="text-gray-600 text-lg mb-2">No posts yet</p>
-          <p className="text-gray-500 text-sm">Start sharing your opinions on constitutional articles!</p>
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <FaUser className="text-5xl text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-600 text-lg">You haven't created any posts yet.</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Start by creating your first post!
+          </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          <p className="text-sm text-gray-600 mb-4">
-            Total posts: <span className="font-semibold text-gray-800">{posts.length}</span>
-          </p>
-          
+        <div className="grid gap-6">
           {posts.map((post) => (
-            <div 
-              key={post.postId} 
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full">
-                      {post.articleNumber}
-                    </span>
-                    <span className="text-xs text-gray-500 font-mono">
-                      ID: {post.postId}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800">
-                    {post.articleTitle}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Content */}
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                {post.content}
-              </p>
-
-              {/* Stats */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600 font-semibold">
-                      👍 {post.agreeCount}
-                    </span>
-                    <span className="text-xs text-gray-500">Agree</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-red-600 font-semibold">
-                      👎 {post.disagreeCount}
-                    </span>
-                    <span className="text-xs text-gray-500">Disagree</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">
-                      💬 {post.posts?.length || 0}
-                    </span>
-                    <span className="text-xs text-gray-500">Comments</span>
-                  </div>
-                </div>
-                
-                <span className="text-xs text-gray-500">
-                  Posted: {formatDate(post.createdAt)}
-                </span>
-              </div>
-            </div>
+            <PostCard
+              key={post.postId}
+              post={post}
+              onAgree={handleAgreeClick}
+              onDisagree={handleDisagreeClick}
+              onComment={handlePostClick}
+              showTrendingBadge={false}
+              showInteractionButtons={true}
+            />
           ))}
         </div>
       )}

@@ -19,7 +19,13 @@ const PostsList = () => {
 
     const fetchPosts = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/posts', { credentials: 'include' });
+        const res = await fetch('http://localhost:5000/api/posts', { 
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${userData.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
         setPosts(data.posts || []);
@@ -34,7 +40,6 @@ const PostsList = () => {
     fetchPosts();
   }, []);
 
-  // ✅ Handles Agree or Disagree clicks
   const callVote = async (postId, type) => {
     if (!user) {
       alert('Please log in first');
@@ -45,13 +50,16 @@ const PostsList = () => {
       const res = await fetch(`http://localhost:5000/api/posts/${postId}/${type}`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
 
-      // Update local UI: update counts and mark user's vote
+      // Update local UI
       setPosts((prev) =>
         prev.map((p) => {
           if (p.postId !== postId) return p;
@@ -59,7 +67,7 @@ const PostsList = () => {
             ...p,
             agreeCount: data.agreeCount,
             disagreeCount: data.disagreeCount,
-            userVote: type, // remember what user did
+            userVote: type,
           };
         })
       );
@@ -78,7 +86,10 @@ const PostsList = () => {
       const res = await fetch(`http://localhost:5000/api/posts/${postId}/post`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
         body: JSON.stringify({ text }),
       });
       const data = await res.json().catch(() => ({}));
@@ -101,6 +112,9 @@ const PostsList = () => {
         {posts.map((post) => {
           const userAgreed = post.userVote === 'agree';
           const userDisagreed = post.userVote === 'disagree';
+          
+          // Fix: Handle populated userId correctly
+          const displayUserId = post.userId?.userId || post.userId || 'Unknown';
 
           return (
             <div
@@ -108,8 +122,8 @@ const PostsList = () => {
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition duration-300 border-l-4 border-blue-500"
             >
               <header className="flex justify-between text-sm text-gray-500 mb-2">
-                <span>User Id: {String(post.userId)}</span>
-                <span>Post Id: {post.postId}</span>
+                <span>User ID: {displayUserId}</span>
+                <span>Post ID: {post.postId}</span>
               </header>
 
               <h3 className="text-xl font-semibold mb-2 text-blue-700">
@@ -118,7 +132,7 @@ const PostsList = () => {
               <p className="text-gray-600 mb-4">{post.content}</p>
 
               <footer className="flex justify-start space-x-4 border-t border-gray-200 pt-4">
-                {/* ✅ Agree button */}
+                {/* Agree button */}
                 <button
                   onClick={() => handleAgreeClick(post.postId)}
                   className={`flex items-center space-x-2 font-semibold py-2 px-4 rounded-lg transition duration-150 ${
@@ -131,7 +145,7 @@ const PostsList = () => {
                   <span>{post.agreeCount ?? 0}</span>
                 </button>
 
-                {/* ✅ Comment / Post */}
+                {/* Comment / Post */}
                 <button
                   onClick={() => handlePostClick(post.postId)}
                   className="flex items-center space-x-2 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-150 hover:bg-gray-300"
@@ -140,7 +154,7 @@ const PostsList = () => {
                   <span>Post / Comment</span>
                 </button>
 
-                {/* ✅ Disagree button */}
+                {/* Disagree button */}
                 <button
                   onClick={() => handleDisagreeClick(post.postId)}
                   className={`flex items-center space-x-2 font-semibold py-2 px-4 rounded-lg transition duration-150 ${

@@ -50,3 +50,9 @@ git push origin varun   # Push to your branch
 git status          # Check changed files
 git branch          # See all branches
 git log --oneline   # View commit history
+
+
+
+
+git add .
+git status 

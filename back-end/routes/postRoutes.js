@@ -16,14 +16,13 @@ const {
 } = require('../controllers/postController');
 
 const User = require('../models/userModel');
-const Post = require('../models/postsModel'); // renamed from Opinion to Post for clarity
+const Post = require('../models/postsModel');
 
 // ----------------------
 // Middleware: Authentication
 // ----------------------
 const authenticate = (req, res, next) => {
   // Implement your authentication logic here
-  // For example, if you're using sessions or JWTs:
   if (!req.user) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
@@ -33,6 +32,7 @@ const authenticate = (req, res, next) => {
 // ----------------------
 // ROUTES
 // ----------------------
+// IMPORTANT: Specific routes MUST come before parameterized routes
 
 // Create a new post
 router.post('/', authenticate, createPost);
@@ -40,25 +40,13 @@ router.post('/', authenticate, createPost);
 // Get all posts
 router.get('/', getAllPosts);
 
-// Get a single post by ID
-router.get('/:postId', getPostById);
+// Get trending posts (MUST be before /:postId)
+router.get('/trending', getTrendingPosts);
 
-// Get posts by article number
+// Get posts by article number (MUST be before /:postId)
 router.get('/article/:articleNumber', getPostsByArticle);
 
-// Agree with a post
-router.post('/:postId/agree', authenticate, agreeWithPost);
-
-// Disagree with a post
-router.post('/:postId/disagree', authenticate, disagreeWithPost);
-
-// Add a comment/post to a post
-router.post('/:postId/post', authenticate, addPostToPost);
-
-// Get statistics for a post
-router.get('/:postId/stats', getPostStats);
-
-// Get all posts by a specific userId (for MyActivity)
+// Get all posts by a specific userId (MUST be before /:postId)
 router.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -71,7 +59,8 @@ router.get('/user/:userId', async (req, res) => {
 
     // Fetch all posts created by this user
     const posts = await Post.find({ userId: user._id })
-      .sort({ createdAt: -1 }) // newest first
+      .populate('userId', 'userId')
+      .sort({ createdAt: -1 })
       .lean();
 
     return res.status(200).json({
@@ -85,7 +74,19 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// Get trending posts
-router.get('/trending', getTrendingPosts);
+// Get a single post by ID
+router.get('/:postId', getPostById);
+
+// Get statistics for a post (MUST be before /:postId/agree, etc.)
+router.get('/:postId/stats', getPostStats);
+
+// Agree with a post
+router.post('/:postId/agree', authenticate, agreeWithPost);
+
+// Disagree with a post
+router.post('/:postId/disagree', authenticate, disagreeWithPost);
+
+// Add a comment/post to a post
+router.post('/:postId/post', authenticate, addPostToPost);
 
 module.exports = router;
