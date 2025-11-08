@@ -158,6 +158,7 @@ const MyActivity = () => {
               onComment={handlePostClick}
               showTrendingBadge={false}
               showInteractionButtons={true}
+              userRole={post.userId?.role} // Pass user role from populated data
             />
           ))}
         </div>

@@ -44,7 +44,7 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('userId', 'userId')
+      .populate('userId', 'userId role') // Include role in populate
       .sort({ createdAt: -1 })
       .lean();
 
@@ -63,7 +63,7 @@ const getPostById = async (req, res) => {
     const { postId } = req.params;
 
     const post = await Post.findOne({ postId })
-      .populate('userId', 'userId')
+      .populate('userId', 'userId role') // Include role
       .lean();
 
     if (!post) {
@@ -169,7 +169,7 @@ const getPostsByArticle = async (req, res) => {
     const { articleNumber } = req.params;
 
     const posts = await Post.find({ articleNumber })
-      .populate('userId', 'userId')
+      .populate('userId', 'userId role') // Include role
       .sort({ createdAt: -1 })
       .lean();
 
@@ -198,7 +198,7 @@ const getMyPosts = async (req, res) => {
     }
 
     const posts = await Post.find({ userId: user._id })
-      .populate('userId', 'userId')
+      .populate('userId', 'userId role') // Include role
       .sort({ createdAt: -1 })
       .lean();
 
@@ -222,7 +222,7 @@ const getTrendingPosts = async (req, res) => {
     
     // Simple approach: calculate interaction score and sort
     const posts = await Post.find()
-      .populate('userId', 'userId')
+      .populate('userId', 'userId role') // Include role
       .lean();
 
     console.log(`Found ${posts.length} total posts`);

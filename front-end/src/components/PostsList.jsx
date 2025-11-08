@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaThumbsUp, FaThumbsDown, FaCommentDots } from 'react-icons/fa';
+import PostCard from './PostCard';
 
 const PostsList = () => {
   const [posts, setPosts] = useState([]);
@@ -109,67 +109,18 @@ const PostsList = () => {
         🏛️ Digital Constitution Posts
       </h2>
       <div className="grid gap-6">
-        {posts.map((post) => {
-          const userAgreed = post.userVote === 'agree';
-          const userDisagreed = post.userVote === 'disagree';
-          
-          // Fix: Handle populated userId correctly
-          const displayUserId = post.userId?.userId || post.userId || 'Unknown';
-
-          return (
-            <div
-              key={post.postId}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition duration-300 border-l-4 border-blue-500"
-            >
-              <header className="flex justify-between text-sm text-gray-500 mb-2">
-                <span>User ID: {displayUserId}</span>
-                <span>Post ID: {post.postId}</span>
-              </header>
-
-              <h3 className="text-xl font-semibold mb-2 text-blue-700">
-                {post.articleTitle}
-              </h3>
-              <p className="text-gray-600 mb-4">{post.content}</p>
-
-              <footer className="flex justify-start space-x-4 border-t border-gray-200 pt-4">
-                {/* Agree button */}
-                <button
-                  onClick={() => handleAgreeClick(post.postId)}
-                  className={`flex items-center space-x-2 font-semibold py-2 px-4 rounded-lg transition duration-150 ${
-                    userAgreed
-                      ? 'bg-green-600 text-white'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
-                  }`}
-                >
-                  <FaThumbsUp />
-                  <span>{post.agreeCount ?? 0}</span>
-                </button>
-
-                {/* Comment / Post */}
-                <button
-                  onClick={() => handlePostClick(post.postId)}
-                  className="flex items-center space-x-2 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-150 hover:bg-gray-300"
-                >
-                  <FaCommentDots />
-                  <span>Post / Comment</span>
-                </button>
-
-                {/* Disagree button */}
-                <button
-                  onClick={() => handleDisagreeClick(post.postId)}
-                  className={`flex items-center space-x-2 font-semibold py-2 px-4 rounded-lg transition duration-150 ${
-                    userDisagreed
-                      ? 'bg-red-600 text-white'
-                      : 'bg-red-100 text-red-700 hover:bg-red-200'
-                  }`}
-                >
-                  <FaThumbsDown />
-                  <span>{post.disagreeCount ?? 0}</span>
-                </button>
-              </footer>
-            </div>
-          );
-        })}
+        {posts.map((post) => (
+          <PostCard
+            key={post.postId}
+            post={post}
+            onAgree={handleAgreeClick}
+            onDisagree={handleDisagreeClick}
+            onComment={handlePostClick}
+            showTrendingBadge={false}
+            showInteractionButtons={true}
+            userRole={post.userId?.role} // Pass user role from populated data
+          />
+        ))}
       </div>
     </div>
   );

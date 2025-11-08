@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaThumbsUp, FaThumbsDown, FaCommentDots, FaFire } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaCommentDots, FaFire, FaStar, FaGavel } from 'react-icons/fa';
 
 const PostCard = ({ 
   post, 
@@ -8,19 +8,44 @@ const PostCard = ({
   onDisagree, 
   onComment,
   showTrendingBadge = false,
-  showInteractionButtons = true 
+  showInteractionButtons = true,
+  userRole = null // Pass user role from parent to avoid multiple API calls
 }) => {
   const userAgreed = post.userVote === 'agree';
   const userDisagreed = post.userVote === 'disagree';
   const displayUserId = post.userId?.userId || post.userId || 'Unknown';
   const borderColor = showTrendingBadge ? 'border-orange-500' : 'border-blue-500';
 
+  // Check if user is Expert or Law Maker
+  const isExpertOrLawMaker = userRole === 'Expert' || userRole === 'Law Maker';
+  const userIdColor = isExpertOrLawMaker ? 'text-yellow-600 font-bold' : 'text-gray-700';
+  
+  // Determine badge icon and text
+  const getBadge = () => {
+    if (userRole === 'Expert') {
+      return { 
+        icon: <FaStar className="text-yellow-500" />, 
+        text: 'Expert', 
+        color: 'bg-yellow-50 border-yellow-400 text-yellow-700' 
+      };
+    } else if (userRole === 'Law Maker') {
+      return { 
+        icon: <FaGavel className="text-yellow-600" />, 
+        text: 'Law Maker', 
+        color: 'bg-yellow-50 border-yellow-500 text-yellow-800' 
+      };
+    }
+    return null;
+  };
+
+  const badge = getBadge();
+
   return (
     <div
       className={`bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition duration-300 border-l-4 ${borderColor}`}
     >
       {/* Header */}
-      <header className="flex justify-between items-start text-sm text-gray-500 mb-2">
+      <header className="flex justify-between items-start text-sm mb-2">
         <div className="flex items-center gap-3">
           {showTrendingBadge && index !== undefined && (
             <div className="bg-orange-500 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-sm">
@@ -28,20 +53,30 @@ const PostCard = ({
             </div>
           )}
           <div>
-            <span className="block">User ID: {displayUserId}</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`block ${userIdColor}`}>
+                User ID: {displayUserId}
+              </span>
+              {badge && (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${badge.color}`}>
+                  {badge.icon}
+                  <span>{badge.text}</span>
+                </span>
+              )}
+            </div>
             {post.articleNumber && (
-              <span className="block text-xs text-gray-400">Article {post.articleNumber}</span>
+              <span className="block text-xl text-gray-400 mt-1">Article:  {post.articleNumber}</span>
             )}
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right text-gray-500">
           <span className="block">Post ID: {post.postId}</span>
-          {showTrendingBadge && post.recentInteractions !== undefined && (
+          {/* {showTrendingBadge && post.recentInteractions !== undefined && (
             <div className="flex items-center gap-1 text-orange-600 font-semibold text-xs mt-1">
               <FaFire className="text-xs" />
               <span>{post.recentInteractions} recent</span>
             </div>
-          )}
+          )} */}
         </div>
       </header>
 

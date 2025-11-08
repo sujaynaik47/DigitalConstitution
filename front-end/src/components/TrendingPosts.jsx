@@ -88,6 +88,7 @@ const TrendingPosts = () => {
               index={index}
               showTrendingBadge={true}
               showInteractionButtons={true}
+              userRole={post.userId?.role} // Pass user role from populated data
               onAgree={() => {}} // Can implement if needed
               onDisagree={() => {}} // Can implement if needed
               onComment={() => {}} // Can implement if needed
