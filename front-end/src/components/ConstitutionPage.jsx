@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-// Import the data you just created
-import { constitutionData } from '../data/constitution';
+import React, { useState, useEffect } from 'react';
 
-// This is a sub-component to keep the code clean
-// It displays the selected article and the opinion tabs
+// This is the working, complete data source
+const CONSTITUTION_API_URL = 'https://raw.githubusercontent.com/civictech-India/constitution-of-india/master/constitution_of_india.json';
+
+// --- SUB-COMPONENT: ArticleDisplay ---
+// (This component is unchanged)
 const ArticleDisplay = ({ article }) => {
-  // This state tracks which tab is open
   const [activeTab, setActiveTab] = useState('share'); 
   const [opinionText, setOpinionText] = useState('');
 
@@ -19,17 +19,17 @@ const ArticleDisplay = ({ article }) => {
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
       
-      {/* This is the "Article content to Read/Review" box */}
+      {/* Article content box */}
       <h2 className="text-3xl font-bold mb-4">{article.title}</h2>
       <div className="bg-gray-50 p-6 rounded border border-gray-200 mb-6">
         <h3 className="text-lg font-semibold mb-2">Article Text</h3>
         <p className="text-gray-700 leading-relaxed whitespace-pre-line">{article.content}</p>
       </div>
 
-      {/* This is the "Share my opinion on this" section */}
+      {/* "Share my opinion" section */}
       <h3 className="text-2xl font-semibold mb-4">Share My Opinion On This</h3>
       
-      {/* These are the tabs from your wireframe */}
+      {/* Tabs from your wireframe */}
       <div className="flex border-b mb-4">
         <button 
           onClick={() => setActiveTab('share')}
@@ -47,7 +47,6 @@ const ArticleDisplay = ({ article }) => {
 
       {/* Tab Content */}
       <div>
-        {/* "Share Opinion" tab content */}
         {activeTab === 'share' && (
           <form onSubmit={handleSubmitOpinion}>
             <textarea 
@@ -66,7 +65,6 @@ const ArticleDisplay = ({ article }) => {
           </form>
         )}
         
-        {/* "Summarize Discussion" tab content */}
         {activeTab === 'discuss' && (
           <div className="text-gray-600 p-4 bg-gray-50 rounded">
             <p>This area will show a summary of existing discussions and opinions from other users about this article.</p>
@@ -78,46 +76,114 @@ const ArticleDisplay = ({ article }) => {
 };
 
 
-// This is the main component for the page
+// --- MAIN COMPONENT: ConstitutionPage ---
 function ConstitutionPage() {
-  // This state tracks which article is currently selected
+  const [articles, setArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedArticleId, setSelectedArticleId] = useState(null);
   
-  // Find the full article object from our data
-  const selectedArticle = constitutionData.find(art => art.id === selectedArticleId);
+  // --- 1. ADD NEW STATE FOR THE SEARCH TERM ---
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // --- Data Fetching (no change) ---
+  useEffect(() => {
+    const fetchConstitutionData = async () => {
+      try {
+        const response = await fetch(CONSTITUTION_API_URL);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json(); 
+        
+        const articlesArray = Object.entries(data).map(([artNo, details]) => ({
+          ArtNo: artNo,
+          Name: `Article ${artNo}: ${details.title}`, 
+          ArtDesc: details.description
+        }));
+        
+        setArticles(articlesArray);
+        
+      } catch (error) {
+        console.error("Failed to fetch constitution data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchConstitutionData();
+    
+  }, []); 
+
+  
+  const selectedArticle = articles.find(art => art.ArtNo === selectedArticleId);
+
+  // --- 2. CREATE A FILTERED LIST ---
+  // This logic runs every time you type in the search bar
+  const filteredArticles = articles.filter(article =>
+    article.Name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     // Main layout: Sidebar + Content Area
     <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-8 gap-8">
       
-      {/* Sidebar (Article Navigation) */}
-      <nav className="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit sticky top-24">
+      {/* Sidebar (Article Navigation) - 40% width */}
+      <nav className="w-full md:w-2/5 bg-white p-6 rounded-lg shadow-md h-fit sticky top-24">
         <h2 className="text-xl font-bold mb-4 text-blue-900">Constitution Articles</h2>
-        <ul className="space-y-1 max-h-96 overflow-y-auto">
-          {constitutionData.map(article => (
-            <li key={article.id}>
-              <button
-                onClick={() => setSelectedArticleId(article.id)}
-                className={`w-full text-left p-2 rounded ${
-                  selectedArticleId === article.id 
-                    ? 'bg-blue-100 text-blue-700 font-bold' 
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {article.title}
-              </button>
-            </li>
-          ))}
-        </ul>
+        
+        {/* --- 3. ADD THE SEARCH BAR INPUT --- */}
+        <input
+          type="text"
+          placeholder="Search by name or article no..."
+          className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        
+        {isLoading ? (
+          <p className="text-gray-500">Loading articles...</p>
+        ) : (
+          <ul className="space-y-1 max-h-[60vh] overflow-y-auto"> {/* Adjusted height */}
+            
+            {/* --- 4. MAP OVER THE *FILTERED* LIST --- */}
+            {filteredArticles.map(article => (
+              <li key={article.ArtNo}>
+                <button
+                  onClick={() => setSelectedArticleId(article.ArtNo)}
+                  className={`w-full text-left p-2 rounded ${
+                    selectedArticleId === article.ArtNo 
+                      ? 'bg-blue-100 text-blue-700 font-bold' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {article.Name}
+                </button>
+              </li>
+            ))}
+            
+            {/* Show a message if no results are found */}
+            {filteredArticles.length === 0 && !isLoading && (
+              <p className="text-gray-500 p-2">No articles found.</p>
+            )}
+          </ul>
+        )}
       </nav>
 
-      {/* Main Content Area */}
-      <main className="w-full md:w-3/4">
-        {selectedArticle ? (
-          // If an article is selected, show it
-          <ArticleDisplay article={selectedArticle} />
+      {/* Main Content Area - 60% width */}
+      <main className="w-full md:w-3/5">
+        {isLoading ? (
+          <div className="bg-white p-10 rounded-lg shadow-md text-center">
+            <h2 className="text-2xl font-semibold text-gray-700">Loading...</h2>
+          </div>
+        ) : selectedArticle ? (
+          <ArticleDisplay 
+            article={{
+              id: selectedArticle.ArtNo,
+              title: selectedArticle.Name,
+              content: selectedArticle.ArtDesc 
+            }} 
+          />
         ) : (
-          // If no article is selected, show a prompt
           <div className="bg-white p-10 rounded-lg shadow-md text-center">
             <h2 className="text-2xl font-semibold text-gray-700">Please select an article</h2>
             <p className="text-gray-500 mt-2">Choose an article from the list on the left to read its content and share your opinion.</p>

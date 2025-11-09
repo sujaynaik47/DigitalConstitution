@@ -1,6 +1,6 @@
 //Home.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';  // We no longer need the local data file for const data
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 import TrendingPosts from "./TrendingPosts";
