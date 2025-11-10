@@ -1,0 +1,224 @@
+Connecting to MongoDB...
+Connected successfully!
+
+Clearing existing posts...
+Existing posts cleared.
+
+Generating posts for users...
+
+✅ Created 20 posts for Dr. Jane Lawson (3K1FQPDC)
+   Post 1: 032Z5M19 - 31B
+   Post 2: UJS4L4DN - 243Z
+   Post 3: YEFMASOJ - 363
+   Post 4: NJI7OC27 - 37
+   Post 5: P570DMQM - 264
+   Post 6: SDWE6DA3 - 395
+   Post 7: XRRYMJX7 - 0
+   Post 8: 3VYHF4K7 - 262
+   Post 9: UNHGN7TP - 31D
+   Post 10: BEJJS2HT - 145
+   Post 11: 10JGZFSG - 218
+   Post 12: PVQKEICN - 97
+   Post 13: J4B7D5LY - 157
+   Post 14: GZ1ATYP3 - 33
+   Post 15: CQKZJGZ2 - 112
+   Post 16: Y4TTY0UZ - 300
+   Post 17: YZON0QFU - 176
+   Post 18: 9UI84KLR - 95
+   Post 19: 5Z6O8HI3 - 243B
+   Post 20: ORXK4LHJ - 252
+✅ Created 20 posts for Michael Torres (S69T2402)
+   Post 1: N64I2MY3 - 243L
+   Post 2: E5GWSI7D - 51A
+   Post 3: QQ6ZG0QZ - 344
+   Post 4: 44T6LVM4 - 30
+   Post 5: 8WXW2VH0 - 315
+   Post 6: 05QW52CP - 170
+   Post 7: VX2VEDCN - 31D
+   Post 8: PC494UXP - 283
+   Post 9: LOAMGZXF - 54
+   Post 10: NRNF17MR - 11
+   Post 11: NPJ2K6C6 - 74
+   Post 12: YFSYUPT9 - 137
+   Post 13: LNI18V9Q - 173
+   Post 14: HGD8CX48 - 337
+   Post 15: EMMTTJ65 - 239A
+   Post 16: A6OY8G6P - 240
+   Post 17: 58TGX2XE - 83
+   Post 18: 154P8MVB - 163
+   Post 19: P9ZLQ1IU - 62
+   Post 20: 82KXX8QS - 373
+✅ Created 20 posts for Alex Green (X9SZ7INB)
+   Post 1: CV2PPE5I - 159
+   Post 2: YZAAKK4N - 228
+   Post 3: 4PB53T1X - 361A
+   Post 4: 57ACAIDZ - 99
+   Post 5: 5CTU40DE - 297
+   Post 6: EB5F9RM5 - 264
+   Post 7: 03BBVU82 - 350
+   Post 8: P92GXM9L - 372
+   Post 9: OTAI0ON5 - 213
+   Post 10: O12EKRB3 - 267
+   Post 11: Q5L97BPI - 292
+   Post 12: YYHUNU1P - 103
+   Post 13: TIFRN0G9 - 243E
+   Post 14: CAECCCTJ - 59
+   Post 15: I4X6QC9R - 369
+   Post 16: 6P182IWB - 212
+   Post 17: 23HYS2VJ - 352
+   Post 18: FZQ77ZNP - 338
+   Post 19: 66RWIVEH - 243ZF
+   Post 20: 3LK9XFP3 - 333
+✅ Created 20 posts for Priya Mehta (F3F2IV3P)
+   Post 1: KC292OEL - 116
+   Post 2: 4E7JZ8OZ - 203
+   Post 3: L1IC91HB - 313
+   Post 4: DIKV6JYS - 323A
+   Post 5: HI2YXNHH - 19
+   Post 6: 0TEYS7LO - 351
+   Post 7: TEVJ2LDX - 345
+   Post 8: L48SO1DP - 253
+   Post 9: AKB2NAV4 - 338A
+   Post 10: N4U90ZGB - 239
+   Post 11: KHEXJV5L - 333
+   Post 12: VAEE2PCQ - 187
+   Post 13: 1YRH8Z2C - 295
+   Post 14: CCFK9NUL - 247
+   Post 15: ELS9U5ZF - 365
+   Post 16: TRIOISFR - 243ZO
+   Post 17: BA3ER6K6 - 243ZA
+   Post 18: MP7G38EX - 357
+   Post 19: IRBLMS3X - 371G
+   Post 20: 8AEYR03H - 54
+✅ Created 20 posts for Samuel Carter (J2H7UTS3)
+   Post 1: OR3KVXOE - 253
+   Post 2: LKAMGNBU - 280
+   Post 3: JQUYCE26 - 21
+   Post 4: XCF0XM2C - 224A
+   Post 5: UGLJ0ATC - 48A
+   Post 6: GXV0RZ1O - 364
+   Post 7: 1GCNIE42 - 172
+   Post 8: A9K5Y2IG - 165
+   Post 9: INVXWFL8 - 243ZI
+   Post 10: KUSXZ2VN - 140
+   Post 11: ZTTUF13B - 321
+   Post 12: O38JZIME - 152
+   Post 13: SK5XNHAM - 183
+   Post 14: TJL4RM0C - 8
+   Post 15: FFFP546J - 37
+   Post 16: 7VGGNEYI - 25
+   Post 17: MQ0Z354O - 13
+   Post 18: ZC3BQH0S - 2
+   Post 19: AL1QQBSV - 298
+   Post 20: SYY7XCFK - 229
+✅ Created 20 posts for Linda Park (DXCWWQAL)
+   Post 1: FZTHZ4ZO - 243ZC
+   Post 2: Z2CT2TC7 - 316
+   Post 3: S2I2JF6B - 315
+   Post 4: IB32U94X - 243L
+   Post 5: H66V7Y6H - 170
+   Post 6: ZH7JUFJQ - 16
+   Post 7: 6Q1QP2BA - 243ZB
+   Post 8: W5NMOPJO - 371D
+   Post 9: Z9ZIVIX5 - 371B
+   Post 10: 4Q41H3WJ - 243ZN
+   Post 11: D4SYWMRK - 243ZE
+   Post 12: PZ65JSDT - 108
+   Post 13: ZENEPNEC - 251
+   Post 14: 5JCDA3EP - 223
+   Post 15: CY4MM58T - 243N
+   Post 16: 1YV6Q3LH - 95
+   Post 17: WEE409R7 - 205
+   Post 18: 2JK4YJGE - 394A
+   Post 19: 38POKORW - 31D
+   Post 20: MP1VKRI6 - 378
+✅ Created 20 posts for Carlos Rivera (MMP82DD0)
+   Post 1: 4EBLKET1 - 323A
+   Post 2: IITLEXKC - 202
+   Post 3: 7QYU8BLQ - 325
+   Post 4: CBVZBAWF - 243ZB
+   Post 5: 8ROZ938Z - 275
+   Post 6: H7O23PFM - 317
+   Post 7: MOBRR6Q0 - 102
+   Post 8: F84BI2W0 - 11
+   Post 9: BM54ECYT - 233
+   Post 10: AO09HVR5 - 243ZI
+   Post 11: FPA2F4E5 - 270
+   Post 12: T3AFCL9K - 327
+   Post 13: OHA3USCC - 294
+   Post 14: SOIXRQOF - 139
+   Post 15: G6H5TMKU - 77
+   Post 16: XV4O90BF - 253
+   Post 17: Y02SF7ZC - 371F
+   Post 18: OHH5HUH2 - 29
+   Post 19: UYRUQGKU - 187
+   Post 20: FBGBXZAM - 191
+✅ Created 20 posts for Emily Chen (Z1D400C9)
+   Post 1: BD4TCIG2 - 316
+   Post 2: T2MJ5P3R - 344
+   Post 3: CLGWT9HM - 246
+   Post 4: 3MHTMU36 - 336
+   Post 5: RVRXU623 - 66
+   Post 6: P4OOSMND - 332
+   Post 7: 2Q37P7BA - 29
+   Post 8: J3XPV1UF - 285
+   Post 9: 9QGJED6L - 365
+   Post 10: NSGLU5ZR - 288
+   Post 11: BE7JG1RO - 21A
+   Post 12: GFMKMMHU - 330
+   Post 13: 6ZCSV8DU - 255
+   Post 14: 5FM596QB - 376
+   Post 15: 43LIL6LD - 243X
+   Post 16: AUH2500S - 162
+   Post 17: SJEPHT4Q - 243O
+   Post 18: MVHV2VVZ - 243I
+   Post 19: 8R25JH1D - 276
+   Post 20: WG4GI3DE - 205
+✅ Created 20 posts for Robert Evans (AQVBSC1M)
+   Post 1: KCHHEEFQ - 243E
+   Post 2: XE73IXH2 - 4
+   Post 3: UF70VAMG - 167
+   Post 4: 83Q9R0VF - 236
+   Post 5: 15I4YGHR - 243ZG
+   Post 6: CC4CBSRT - 164
+   Post 7: QH4U33QP - 81
+   Post 8: 5D531BYJ - 39
+   Post 9: PPSUAAQL - 243I
+   Post 10: OK72CPMD - 243
+   Post 11: 8CA3HF7T - 180
+   Post 12: GDYDZSMC - 249
+   Post 13: UP229F4E - 7
+   Post 14: N189CSMI - 14
+   Post 15: E1DSA5D5 - 124
+   Post 16: 32XR4ENY - 372
+   Post 17: 326I67CV - 109
+   Post 18: XEQ5G4VW - 253
+   Post 19: 6I78BKEE - 75
+   Post 20: 2UIW0X9Z - 53
+✅ Created 20 posts for Sofia Rossi (CZ9BSB3Q)
+   Post 1: 0TC8NKGH - 55
+   Post 2: EBVQML5U - 102
+   Post 3: F37A96JZ - 79
+   Post 4: 31G61I3S - 243R
+   Post 5: 3UL00627 - 243ZC
+   Post 6: L1DZUJJ2 - 87
+   Post 7: UGCBGYWZ - 89
+   Post 8: AVRRP779 - 258
+   Post 9: DEXXLW53 - 246
+   Post 10: D7NGTMRR - 0
+   Post 11: YSR69LTD - 45
+   Post 12: XQJ8RBUJ - 109
+   Post 13: 8Y0MCZ9W - 325
+   Post 14: 5I97SHKL - 287
+   Post 15: UMN7CMOY - 377
+   Post 16: AYPNPHPO - 321
+   Post 17: 6N23ENTX - 197
+   Post 18: QD55ZYA7 - 54
+   Post 19: 8RNA297I - 181
+   Post 20: KBEI98ST - 221
+
+✨ Database seeding completed successfully!
+
+Total posts in database: 200
+
+Database connection closed.

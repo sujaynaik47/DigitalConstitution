@@ -9,6 +9,8 @@ import PostCard from './PostCard';
 
 // Constitution data API
 const CONSTITUTION_API_URL = 'https://raw.githubusercontent.com/civictech-India/constitution-of-india/master/constitution_of_india.json';
+// const CONSTITUTION_API_URL = '../data/constitution.json';
+
 
 // Reddit/YouTube-style Nested Reply Component with threading
 const ReplyPost = ({ post, level = 0, onAgree, onDisagree, onComment, onReply }) => {
