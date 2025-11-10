@@ -1,6 +1,6 @@
 //Home.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';  // We no longer need the local data file for const data
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 import TrendingPosts from "./TrendingPosts";
@@ -8,6 +8,7 @@ import MyActivity from "./MyActivity";
 import ProfileView from "./ProfileView";
 import Vote from "./Vote";
 import PostsList from "./PostsList";
+import ConstitutionPage from "./ConstitutionPage"; // <-- ADD THIS IMPORT
 
 // --- Icon Component ---
 const Icon = ({ name, className = "" }) => {
@@ -107,6 +108,10 @@ const NavBar = () => {
     { name: 'Trending', icon: 'trendingUp', path: '/trending' },
     { name: 'Vote', icon: 'vote', path: '/vote' },
     { name: 'Posts', icon: 'clipboardList', path: '/posts' },
+
+    // --- ADD THIS NEW LINK ---
+    { name: 'Read Constitution', icon: 'bookOpen', path: '/constitution' },
+    
     { name: 'My Activity', icon: 'messageSquare', path: '/my-activity' },
     { name: 'Profile', icon: 'user', path: '/profile' },
   ];
@@ -292,6 +297,9 @@ const App = ({ user }) => {
           <Route path="/profile" element={<ProfileView initialUser={user} />} />
           <Route path="/vote" element={<Vote />} />
           <Route path="/posts" element={<PostsList />} />
+
+          {/* --- ADD THIS NEW ROUTE --- */}
+          <Route path="/constitution" element={<ConstitutionPage />} />
         </Routes>
         </div>
       </main>
