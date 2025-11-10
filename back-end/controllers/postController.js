@@ -1,7 +1,5 @@
 // controllers/postController.js
 
-// controllers/postController.js
-
 const Post = require('../models/postsModel');
 const User = require('../models/userModel');
 
