@@ -1,4 +1,5 @@
 // models/postsModel.js
+
 const mongoose = require("mongoose");
 
 // Helper to generate an 8-char uppercase alphanumeric postId

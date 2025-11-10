@@ -1,3 +1,5 @@
+// PostCard.jsx
+
 import React from 'react';
 import { FaThumbsUp, FaThumbsDown, FaCommentDots, FaFire, FaStar, FaGavel } from 'react-icons/fa';
 

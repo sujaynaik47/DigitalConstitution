@@ -9,7 +9,6 @@ require("dotenv").config({ path: __dirname + "/.env" });
 // MongoDB connection string - update with your actual connection string
 const MONGO_URI = process.env.MONGO_URI;
 
-
 // User data with their userIds
 const users = [
   { name: 'Dr. Jane Lawson', userId: '3K1FQPDC', type: 'Expert', email: 'jane.lawson@example.com' },
@@ -2571,3 +2570,4 @@ description: "The Indian Independence Act, 1947, and the Government of India Act
 
   // Run the script
   seedPosts();
+  

@@ -1,4 +1,5 @@
 // middleware/authenticate.js
+
 const User = require('../models/userModel');
 
 const authenticate = async (req, res, next) => {

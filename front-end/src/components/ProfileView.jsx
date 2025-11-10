@@ -239,4 +239,3 @@ const ProfileView = ({ initialUser = null }) => {
 };
 
 export default ProfileView;
-

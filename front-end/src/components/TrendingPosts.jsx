@@ -172,4 +172,3 @@ const TrendingPosts = () => {
 };
 
 export default TrendingPosts;
-
