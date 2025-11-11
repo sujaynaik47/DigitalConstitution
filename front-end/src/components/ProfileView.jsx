@@ -14,6 +14,7 @@ const ProfileView = ({ initialUser = null }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changing, setChanging] = useState(false);
   const [changeMessage, setChangeMessage] = useState('');
+  const [postsCountState, setPostsCountState] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,6 +52,36 @@ const ProfileView = ({ initialUser = null }) => {
       }
     }
   }, [open, initialUser]);
+
+  // If user data doesn't include posts count, try fetching it from the API
+  useEffect(() => {
+    if (!open) return;
+    const target = user || initialUser;
+    if (!target || postsCountState !== null) return;
+
+    const hasArray = Array.isArray(target.posts);
+    const hasNumeric = typeof target.postsCount === 'number' || typeof target.stats?.posts === 'number' || typeof target.posts === 'number';
+    if (hasArray || hasNumeric) return; // nothing to fetch
+
+    const fetchCount = async () => {
+      try {
+        const userId = target.userId;
+        if (!userId) return;
+        const res = await fetch(`http://localhost:5000/api/posts/user/${userId}`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        const len = Array.isArray(data.posts) ? data.posts.length : (typeof data.count === 'number' ? data.count : null);
+        if (typeof len === 'number') setPostsCountState(len);
+      } catch {
+        // ignore silently
+      }
+    };
+
+    fetchCount();
+  }, [open, user, initialUser, postsCountState]);
 
   const onChangePassword = async (e) => {
     e.preventDefault();
@@ -143,8 +174,19 @@ const ProfileView = ({ initialUser = null }) => {
 
   if (!open) return null;
 
-  const postsCount = user?.postsCount ?? 
-    (user?.posts ? user.posts.length : (user?.stats?.posts ?? '—'));
+  const postsCount = (() => {
+    if (typeof postsCountState === 'number') return postsCountState;
+    const target = user || initialUser;
+    if (!target) return '—';
+    if (Array.isArray(target.posts)) return target.posts.length;
+    if (typeof target.posts === 'number') return target.posts;
+    if (typeof target.postsCount === 'number') return target.postsCount;
+    if (typeof target.stats?.posts === 'number') return target.stats.posts;
+    // try parsing numeric-looking strings
+    const maybe = target.postsCount ?? target.stats?.posts ?? target.posts;
+    if (typeof maybe === 'string' && /^[0-9]+$/.test(maybe)) return parseInt(maybe, 10);
+    return '—';
+  })();
 
   // Get userId - prioritize from user object
   const displayUserId = user?.userId || initialUser?.userId || 'N/A';
