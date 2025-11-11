@@ -1,4 +1,4 @@
- // routes/postsRoutes.js
+// routes/postsRoutes.js
 
 const express = require('express');
 const router = express.Router();
@@ -63,7 +63,7 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// Get a single post by ID
+// Get a single post by ID (includes createdAt in response)
 router.get('/:postId', getPostById);
 
 // Get statistics for a post (MUST be before /:postId/agree, etc.)
