@@ -110,15 +110,28 @@ const PostCard = ({
                 </span>
               )}
             </div>
+            {/* {post.articleNumber && (
+              <button
+                onClick={handleArticleClick}
+                className="text-3xl  flex items-center gap-1 mt-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors "
+
+              >
+                <span className="text-sm font-large">Article: {post.articleNumber}</span>
+                {/* <FaExternalLinkAlt className="text-xs" />}
+              </button>
+            )} */}
+
             {post.articleNumber && (
               <button
                 onClick={handleArticleClick}
-                className="flex items-center gap-1 mt-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                className="text-l font-semibold flex items-center gap-2 mt-2 px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-900 hover:underline transition-colors rounded"
               >
-                <span className="text-sm font-large">Article: {post.articleNumber}</span>
-                <FaExternalLinkAlt className="text-xs" />
+                Article: {post.articleNumber}
+                {/* <FaExternalLinkAlt className="text-xl" /> */}
               </button>
             )}
+
+
           </div>
         </div>
         <div className="text-right text-gray-500">
