@@ -14,7 +14,7 @@ const SecurityPage = () => {
         We operate a continuous bug bounty program, inviting ethical hackers to test our security 
         protocols and report vulnerabilities responsibly.
       </p>
-      <p className="text-sm text-gray-500 mt-6">For security disclosures, please contact: security@digitalplatform.gov</p>
+      {/* <p className="text-sm text-gray-500 mt-6">For security disclosures, please contact: security@digitalplatform.gov</p> */}
     </div>
   );
 };
