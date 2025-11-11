@@ -10,6 +10,21 @@ import Vote from "./Vote";
 import PostsList from "./PostsList";
 import ConstitutionPage from "./ConstitutionPage"; // <-- ADD THIS IMPORT
 
+// Platform Links
+import AboutUsPage from './AboutUsPage';
+import OurMissionPage from './OurMissionPage';
+import LawmakerLoginPage from './LawmakerLoginPage';
+
+// Support Links
+import HelpCenterPage from './HelpCenterPage'; // This page covers both /help and /help#faq
+import ContactUsPage from './ContactUsPage';
+
+// Legal Links
+import TermsOfServicePage from './legal/TermsOfServicePage';
+import PrivacyPolicyPage from './legal/PrivacyPolicyPage';
+import SecurityPage from './legal/SecurityPage';
+
+
 // --- Icon Component ---
 const Icon = ({ name, className = "" }) => {
   const icons = {
@@ -134,7 +149,7 @@ const NavBar = () => {
               className="flex items-center space-x-2 text-white text-xl font-bold"
             >
               <Icon name="bookOpen" className="text-2xl text-orange-400" />
-              <span>Digital Platform</span>
+              <span>Digital Constitution Forum</span>
             </button>
           </div>
           
@@ -300,6 +315,23 @@ const App = ({ user }) => {
 
           {/* --- ADD THIS NEW ROUTE --- */}
           <Route path="/constitution" element={<ConstitutionPage />} />
+
+
+
+          {/* Platform Routes */}
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/mission" element={<OurMissionPage />} />
+          <Route path="/lawmaker-login" element={<LawmakerLoginPage />} />
+          
+          {/* Support Routes */}
+          {/* Note: /help#faq would typically be handled client-side by the browser scrolling to an element on the /help page */}
+          <Route path="/help" element={<HelpCenterPage />} />
+          <Route path="/contact" element={<ContactUsPage />} />
+          
+          {/* Legal Routes */}
+          <Route path="/legal/terms" element={<TermsOfServicePage />} />
+          <Route path="/legal/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/legal/security" element={<SecurityPage />} />
         </Routes>
         </div>
       </main>
