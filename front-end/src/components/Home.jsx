@@ -26,6 +26,7 @@ import ContactUsPage from './ContactUsPage';
 import TermsOfServicePage from './legal/TermsOfServicePage';
 import PrivacyPolicyPage from './legal/PrivacyPolicyPage';
 import SecurityPage from './legal/SecurityPage';
+import Chatbot from "./chatbot";
 
 
 // --- Icon Component ---
@@ -280,6 +281,7 @@ const App = ({ user }) => {
         </div>
       </main>
       <Footer /> 
+      <Chatbot /> 
     </div>
   );
 };
