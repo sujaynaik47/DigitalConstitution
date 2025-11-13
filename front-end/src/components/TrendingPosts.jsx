@@ -139,7 +139,7 @@ const TrendingPosts = () => {
       </div>
       
       <p className="text-sm text-gray-600 mb-6">
-        Posts with the most interactions in the last 40 hours
+        Posts with the most interactions in the last 48 hours
       </p>
 
       {posts.length === 0 ? (
