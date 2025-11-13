@@ -15,7 +15,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
 
 // POST /chat
@@ -66,3 +66,36 @@ Guidelines for interactions:
 });
 
 module.exports = router;
+
+
+
+
+
+
+
+// const express = require("express");
+// const dotenv = require("dotenv");
+// const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// dotenv.config();
+// const app = express();
+// app.use(express.json());
+
+// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+
+// app.post("/api/chat", async (req, res) => {
+//   try {
+//     const userMessage = req.body.message;
+
+//     const result = await model.generateContent(userMessage);
+//     const answer = result.response.text();
+
+//     res.json({ answer });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ answer: "⚠️ Error generating response." });
+//   }
+// });
+
+// app.listen(5000, () => console.log("Server running on port 5000"));
