@@ -10,20 +10,10 @@ const pollSchema = new mongoose.Schema({
   pollId: { type: Number, required: true, unique: true },
   question: { type: String, required: true },
   options: [pollOptionSchema],
-  createdBy: { type: String, required: true }, // userId of the expert
+  createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  endTime: { type: Date, default: null } // NEW: Poll end time
 });
 
 module.exports = mongoose.model("Poll", pollSchema);
- 
-
-// const mongoose = require("mongoose");
-
-// const voteSchema = new mongoose.Schema({
-//   problemId: { type: Number, required: true },
-//   text: { type: String, required: true },
-//   upvotes: { type: Number, default: 0 },
-// });
-
-// module.exports = mongoose.model("Vote", voteSchema);

@@ -7,6 +7,7 @@ const Vote = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPollQuestion, setNewPollQuestion] = useState("");
   const [newPollOptions, setNewPollOptions] = useState(["", ""]);
+  const [newPollEndTime, setNewPollEndTime] = useState("");
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState({});
@@ -29,10 +30,13 @@ const Vote = () => {
         const data = await response.json();
         setPolls(data.polls);
 
-        // Map user votes
+        // Map user votes with timestamp
         const votesMap = {};
         data.userVotes.forEach(vote => {
-          votesMap[vote.pollId] = vote.optionId;
+          votesMap[vote.pollId] = {
+            optionId: vote.optionId,
+            votedAt: vote.votedAt
+          };
         });
         setUserVotes(votesMap);
       } catch (error) {
@@ -91,10 +95,8 @@ const Vote = () => {
         }),
       });
 
-      // Always parse the response body first
       const data = await response.json();
 
-      // Then check if the request was successful
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit vote");
       }
@@ -106,10 +108,13 @@ const Vote = () => {
         )
       );
 
-      // Mark this poll as voted
+      // Mark this poll as voted with timestamp
       setUserVotes(prev => ({
         ...prev,
-        [pollId]: selectedOptionId
+        [pollId]: {
+          optionId: selectedOptionId,
+          votedAt: data.votedAt
+        }
       }));
 
       // Clear the selected option for this poll
@@ -168,7 +173,8 @@ const Vote = () => {
         body: JSON.stringify({
           userId: userId,
           question: newPollQuestion,
-          options: validOptions.map(text => ({ text }))
+          options: validOptions.map(text => ({ text })),
+          endTime: newPollEndTime || null
         }),
       });
 
@@ -181,12 +187,30 @@ const Vote = () => {
       setPolls(data.polls);
       setNewPollQuestion("");
       setNewPollOptions(["", ""]);
+      setNewPollEndTime("");
       setShowCreateForm(false);
       alert("✅ Poll created successfully!");
     } catch (error) {
       console.error("Poll creation failed:", error);
       alert(`❌ ${error.message}`);
     }
+  };
+
+  const isPollEnded = (endTime) => {
+    if (!endTime) return false;
+    return new Date() > new Date(endTime);
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -246,6 +270,21 @@ const Vote = () => {
                 </button>
               </div>
 
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  End Time (Optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={newPollEndTime}
+                  onChange={(e) => setNewPollEndTime(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Leave empty for no end time
+                </p>
+              </div>
+
               <button
                 onClick={handleCreatePoll}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
@@ -261,15 +300,35 @@ const Vote = () => {
         {polls.length > 0 ? (
           polls.map((poll) => {
             const hasVoted = userVotes[poll.pollId] !== undefined;
-            const selectedOption = selectedOptions[poll.pollId] || userVotes[poll.pollId];
+            const selectedOption = selectedOptions[poll.pollId] || userVotes[poll.pollId]?.optionId;
             const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
             const isLoading = loading[poll.pollId];
+            const pollEnded = isPollEnded(poll.endTime);
 
             return (
-              <div key={poll.pollId} className="bg-white p-6 rounded-2xl shadow-lg">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+              <div 
+                key={poll.pollId} 
+                className={`p-6 rounded-2xl shadow-lg ${
+                  pollEnded ? 'bg-gray-200 border-4 border-red-400' : 'bg-white'
+                }`}
+              >
+                {pollEnded && (
+                  <div className="bg-red-500 text-white text-center py-2 px-4 rounded-lg mb-4 font-bold">
+                    🔒 VOTING CLOSED
+                  </div>
+                )}
+
+                <h2 className="text-2xl font-semibold mb-2 text-gray-800">
                   {poll.question}
                 </h2>
+
+                {poll.endTime && (
+                  <p className={`text-sm mb-4 font-medium ${
+                    pollEnded ? 'text-red-600' : 'text-blue-600'
+                  }`}>
+                    {pollEnded ? 'Ended: ' : 'Ends: '}{formatDateTime(poll.endTime)}
+                  </p>
+                )}
 
                 <div className="space-y-3 mb-4">
                   {poll.options.map((option) => {
@@ -279,10 +338,10 @@ const Vote = () => {
                     return (
                       <div
                         key={option.optionId}
-                        onClick={() => handleSelectOption(poll.pollId, option.optionId)}
-                        className={`cursor-pointer border rounded-xl p-4 transition relative overflow-hidden
-                          ${isSelected ? "border-green-600 bg-green-50" : "border-gray-300 hover:bg-gray-50"}
-                          ${hasVoted ? "pointer-events-none opacity-80" : ""}`}
+                        onClick={() => !pollEnded && handleSelectOption(poll.pollId, option.optionId)}
+                        className={`border rounded-xl p-4 transition relative overflow-hidden
+                          ${isSelected ? "border-green-600 bg-green-50" : "border-gray-300"}
+                          ${pollEnded ? "opacity-60 cursor-not-allowed" : hasVoted ? "pointer-events-none opacity-80" : "cursor-pointer hover:bg-gray-50"}`}
                       >
                         {hasVoted && (
                           <div
@@ -294,7 +353,7 @@ const Vote = () => {
                         <div className="relative flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <p className="text-gray-800 font-medium">{option.text}</p>
-                            {hasVoted && userVotes[poll.pollId] === option.optionId && (
+                            {hasVoted && userVotes[poll.pollId]?.optionId === option.optionId && (
                               <span className="text-green-600 font-bold">✓ Your Vote</span>
                             )}
                           </div>
@@ -312,7 +371,7 @@ const Vote = () => {
                   })}
                 </div>
 
-                {!hasVoted && (
+                {!hasVoted && !pollEnded && (
                   <button
                     onClick={() => handleSubmitVote(poll.pollId)}
                     disabled={isLoading || !selectedOptions[poll.pollId]}
@@ -327,8 +386,19 @@ const Vote = () => {
                 )}
 
                 {hasVoted && (
-                  <div className="text-center bg-green-50 text-green-700 font-semibold py-3 rounded-lg border-2 border-green-200">
-                    ✓ You have already voted on this poll
+                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mt-4">
+                    <div className="text-center text-green-700 font-semibold mb-2">
+                      ✓ You have already voted on this poll
+                    </div>
+                    <div className="text-center text-sm text-gray-600">
+                      Voted on: {formatDateTime(userVotes[poll.pollId]?.votedAt)}
+                    </div>
+                  </div>
+                )}
+
+                {pollEnded && !hasVoted && (
+                  <div className="text-center bg-red-50 text-red-700 font-semibold py-3 rounded-lg border-2 border-red-200">
+                    🔒 This poll has ended
                   </div>
                 )}
 
