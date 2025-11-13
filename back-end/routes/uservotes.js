@@ -45,49 +45,32 @@ router.get("/", async (req, res) => {
     if (userId) {
       const votes = await UserVote.find({ userId });
       userVotes = votes.map(v => ({ pollId: v.pollId, optionId: v.optionId }));
+      console.log(`User ${userId} has voted on ${userVotes.length} polls`);
     }
 
-    res.json({ polls, userVotes });
+    return res.status(200).json({ polls, userVotes });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch polls" });
+    console.error("Error fetching polls:", err);
+    return res.status(500).json({ error: "Failed to fetch polls" });
   }
 });
-
 
 // GET /api/vote/:pollId - Get specific poll details
 router.get("/:pollId", async (req, res) => {
   try {
-    const pollId = parseInt(req.params.pollId);  // FIXED: added .params
+    const pollId = parseInt(req.params.pollId);
     const poll = await Poll.findOne({ pollId, isActive: true });
     
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
 
-    res.json({ poll });
+    return res.status(200).json({ poll });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch poll" });
+    console.error("Error fetching poll:", err);
+    return res.status(500).json({ error: "Failed to fetch poll" });
   }
 });
-
-// // GET /api/vote/:pollId - Get specific poll details
-// router.get("/:pollId", async (req, res) => {
-//   try {
-//     const pollId = parseInt(req.pollId);
-//     const poll = await Poll.findOne({ pollId, isActive: true });
-    
-//     if (!poll) {
-//       return res.status(404).json({ error: "Poll not found" });
-//     }
-
-//     res.json({ poll });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to fetch poll" });
-//   }
-// });
 
 // POST /api/vote - Submit a vote
 // Body: { userId, pollId, optionId }
@@ -95,46 +78,73 @@ router.post("/", async (req, res) => {
   try {
     const { userId, pollId, optionId } = req.body;
 
+    console.log("=== Vote Submission Request ===");
+    console.log("User:", userId, "Poll:", pollId, "Option:", optionId);
+
+    // Validate input
     if (!userId || !pollId || !optionId) {
+      console.log("❌ Missing required fields");
       return res.status(400).json({ error: "userId, pollId, and optionId are required" });
     }
 
     // Check if user exists
     const user = await User.findOne({ userId });
     if (!user) {
+      console.log("❌ User not found:", userId);
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Check if user already voted on this poll
+    // CRITICAL: Check if user already voted on this poll (FIRST CHECK)
     const existingVote = await UserVote.findOne({ userId, pollId });
     if (existingVote) {
+      console.log("❌ User has already voted on this poll");
+      console.log("Existing vote:", existingVote);
       return res.status(400).json({ error: "You have already voted on this poll" });
     }
 
     // Find the poll
     const poll = await Poll.findOne({ pollId, isActive: true });
     if (!poll) {
+      console.log("❌ Poll not found:", pollId);
       return res.status(404).json({ error: "Poll not found" });
     }
 
     // Find the option and increment votes
     const option = poll.options.find(opt => opt.optionId === optionId);
     if (!option) {
+      console.log("❌ Option not found:", optionId);
       return res.status(404).json({ error: "Option not found" });
     }
 
-    option.votes += 1;
-    await poll.save();
+    // DOUBLE CHECK: Verify again that user hasn't voted (race condition protection)
+    const doubleCheck = await UserVote.findOne({ userId, pollId });
+    if (doubleCheck) {
+      console.log("❌ Race condition detected - user already voted");
+      return res.status(400).json({ error: "You have already voted on this poll" });
+    }
 
-    // Save user's vote
+    // Save user's vote FIRST (before incrementing poll votes)
     const userVote = new UserVote({ userId, pollId, optionId });
     await userVote.save();
+    console.log("✅ User vote record created");
 
-    // Return updated poll
-    res.json({ poll, message: "Vote submitted successfully" });
+    // Then increment vote count
+    option.votes += 1;
+    await poll.save();
+    console.log("✅ Poll vote count updated");
+
+    console.log("=== Vote Submitted Successfully ===");
+    console.log("Poll:", poll.question);
+    console.log("Option:", option.text, "- Total votes:", option.votes);
+
+    // Return updated poll with 200 status
+    return res.status(200).json({ 
+      poll, 
+      message: "Vote submitted successfully" 
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to submit vote" });
+    console.error("❌ Error submitting vote:", err);
+    return res.status(500).json({ error: "Failed to submit vote" });
   }
 });
 
@@ -144,7 +154,11 @@ router.post("/create", async (req, res) => {
   try {
     const { userId, question, options } = req.body;
 
+    console.log("=== Poll Creation Request ===");
+    console.log("User:", userId, "Options count:", options?.length);
+
     if (!userId || !question || !options || !Array.isArray(options) || options.length < 2) {
+      console.log("❌ Invalid poll creation data");
       return res.status(400).json({ 
         error: "userId, question, and at least 2 options are required" 
       });
@@ -153,10 +167,12 @@ router.post("/create", async (req, res) => {
     // Find user and check if they are an Expert
     const user = await User.findOne({ userId });
     if (!user) {
+      console.log("❌ User not found:", userId);
       return res.status(404).json({ error: "User not found" });
     }
 
     if (user.role !== "Expert") {
+      console.log("❌ User is not an Expert:", userId);
       return res.status(403).json({ error: "Only Experts can create polls" });
     }
 
@@ -182,12 +198,18 @@ router.post("/create", async (req, res) => {
 
     await newPoll.save();
 
+    console.log("✅ Poll created successfully");
+    console.log("Poll ID:", newPollId, "Question:", question);
+
     // Return all polls
     const polls = await Poll.find({ isActive: true }).sort({ createdAt: -1 });
-    res.json({ polls, message: "Poll created successfully" });
+    return res.status(200).json({ 
+      polls, 
+      message: "Poll created successfully" 
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create poll" });
+    console.error("❌ Error creating poll:", err);
+    return res.status(500).json({ error: "Failed to create poll" });
   }
 });
 
@@ -197,6 +219,9 @@ router.delete("/:pollId", async (req, res) => {
     const { userId } = req.body;
     const pollId = parseInt(req.params.pollId);
 
+    console.log("=== Poll Deletion Request ===");
+    console.log("User:", userId, "Poll:", pollId);
+
     if (!userId) {
       return res.status(400).json({ error: "userId is required" });
     }
@@ -204,20 +229,24 @@ router.delete("/:pollId", async (req, res) => {
     // Find user and check if they are an Expert
     const user = await User.findOne({ userId });
     if (!user) {
+      console.log("❌ User not found:", userId);
       return res.status(404).json({ error: "User not found" });
     }
 
     if (user.role !== "Expert") {
+      console.log("❌ User is not an Expert:", userId);
       return res.status(403).json({ error: "Only Experts can delete polls" });
     }
 
     // Find poll and verify ownership
     const poll = await Poll.findOne({ pollId });
     if (!poll) {
+      console.log("❌ Poll not found:", pollId);
       return res.status(404).json({ error: "Poll not found" });
     }
 
     if (poll.createdBy !== userId) {
+      console.log("❌ User doesn't own this poll");
       return res.status(403).json({ error: "You can only delete your own polls" });
     }
 
@@ -225,465 +254,13 @@ router.delete("/:pollId", async (req, res) => {
     poll.isActive = false;
     await poll.save();
 
-    res.json({ message: "Poll deleted successfully" });
+    console.log("✅ Poll deleted successfully:", pollId);
+
+    return res.status(200).json({ message: "Poll deleted successfully" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete poll" });
+    console.error("❌ Error deleting poll:", err);
+    return res.status(500).json({ error: "Failed to delete poll" });
   }
 });
 
 module.exports = router;
-
-
-
-
-
-
-
-
-// const express = require("express");
-// const Vote = require("../models/voteModel");
-// const UserVote = require("../models/uservotes");
-// const User = require("../models/userModel");
-
-// const router = express.Router();
-
-// // Function to ensure default "Agree" option exists
-// async function ensureDefaultVoteOption() {
-//   try {
-//     const agreeOption = await Vote.findOne({ problemId: 1 });
-//     if (!agreeOption) {
-//       const defaultVote = new Vote({
-//         problemId: 1,
-//         text: "Agree",
-//         upvotes: 0
-//       });
-//       await defaultVote.save();
-//       console.log("Default 'Agree' voting option created");
-//     }
-//   } catch (error) {
-//     console.error("Error ensuring default vote option:", error);
-//   }
-// }
-
-// // Call this when server starts or when this route is first accessed
-// ensureDefaultVoteOption();
-
-// // GET /api/vote?userId=...
-// // Returns all problems + user's previous vote (if any)
-// router.get("/", async (req, res) => {
-//   try {
-//     // Ensure default option exists
-//     await ensureDefaultVoteOption();
-    
-//     const userId = req.query.userId;
-//     const problems = await Vote.find({}).sort({ upvotes: -1 });
-
-//     let userVote = null;
-//     if (userId) {
-//       const vote = await UserVote.findOne({ userId });
-//       if (vote) userVote = vote.problemId;
-//     }
-
-//     res.json({ problems, userVote });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to fetch votes" });
-//   }
-// });
-
-// // POST /api/vote
-// // Body: { userId, voteId }
-// // All users (Expert and Citizen) can vote
-// router.post("/", async (req, res) => {
-//   try {
-//     const { userId, voteId } = req.body;
-
-//     if (!userId || !voteId) {
-//       return res.status(400).json({ error: "userId and voteId are required" });
-//     }
-
-//     // Check if user exists
-//     const user = await User.findOne({ userId });
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     // Check if user already voted
-//     const existingVote = await UserVote.findOne({ userId });
-//     if (existingVote) {
-//       return res.status(400).json({ error: "You have already voted" });
-//     }
-
-//     // Increment the vote count for the selected option
-//     const problem = await Vote.findOne({ problemId: voteId });
-//     if (!problem) return res.status(404).json({ error: "Vote option not found" });
-
-//     problem.upvotes += 1;
-//     await problem.save();
-
-//     // Save user's vote
-//     const userVote = new UserVote({ userId, problemId: voteId });
-//     await userVote.save();
-
-//     // Return updated problems
-//     const problems = await Vote.find({}).sort({ upvotes: -1 });
-//     res.json({ problems });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to submit vote" });
-//   }
-// });
-
-// // POST /api/vote/create
-// // Body: { userId, text }
-// // Only Experts can create new voting options
-// router.post("/create", async (req, res) => {
-//   try {
-//     const { userId, text } = req.body;
-
-//     if (!userId || !text) {
-//       return res.status(400).json({ error: "userId and text are required" });
-//     }
-
-//     // Find user and check if they are an Expert
-//     const user = await User.findOne({ userId });
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     // Check if user role is "Expert" (case-sensitive match)
-//     if (user.role !== "Expert") {
-//       return res.status(403).json({ error: "Only Experts can create new voting options" });
-//     }
-
-//     // Find the highest problemId and increment it
-//     const lastProblem = await Vote.findOne().sort({ problemId: -1 });
-//     const newProblemId = lastProblem ? lastProblem.problemId + 1 : 1;
-
-//     // Create new vote option
-//     const newVote = new Vote({
-//       problemId: newProblemId,
-//       text: text,
-//       upvotes: 0
-//     });
-
-//     await newVote.save();
-
-//     // Return updated problems
-//     const problems = await Vote.find({}).sort({ upvotes: -1 });
-//     res.json({ problems, message: "Vote option created successfully" });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to create vote option" });
-//   }
-// });
-
-// module.exports = router;
-
-
-
-
-
-
-
-
-// // const express = require("express");
-// // const Vote = require("../models/voteModel");
-// // const UserVote = require("../models/uservotes");
-// // const User = require("../models/userModel");
-
-// // const router = express.Router();
-
-// // // GET /api/vote?userId=...
-// // // Returns all problems + user's previous vote (if any)
-// // router.get("/", async (req, res) => {
-// //   try {
-// //     const userId = req.query.userId;
-// //     const problems = await Vote.find({}).sort({ upvotes: -1 });
-
-// //     let userVote = null;
-// //     if (userId) {
-// //       const vote = await UserVote.findOne({ userId });
-// //       if (vote) userVote = vote.problemId;
-// //     }
-
-// //     res.json({ problems, userVote });
-// //   } catch (err) {
-// //     console.error(err);
-// //     res.status(500).json({ error: "Failed to fetch votes" });
-// //   }
-// // });
-
-// // // POST /api/vote
-// // // Body: { userId, voteId }
-// // // All users (Expert and Citizen) can vote
-// // router.post("/", async (req, res) => {
-// //   try {
-// //     const { userId, voteId } = req.body;
-
-// //     if (!userId || !voteId) {
-// //       return res.status(400).json({ error: "userId and voteId are required" });
-// //     }
-
-// //     // Check if user exists
-// //     const user = await User.findOne({ userId });
-// //     if (!user) {
-// //       return res.status(404).json({ error: "User not found" });
-// //     }
-
-// //     // Check if user already voted
-// //     const existingVote = await UserVote.findOne({ userId });
-// //     if (existingVote) {
-// //       return res.status(400).json({ error: "You have already voted" });
-// //     }
-
-// //     // Increment the vote count for the selected option
-// //     const problem = await Vote.findOne({ problemId: voteId });
-// //     if (!problem) return res.status(404).json({ error: "Vote option not found" });
-
-// //     problem.upvotes += 1;
-// //     await problem.save();
-
-// //     // Save user's vote
-// //     const userVote = new UserVote({ userId, problemId: voteId });
-// //     await userVote.save();
-
-// //     // Return updated problems
-// //     const problems = await Vote.find({}).sort({ upvotes: -1 });
-// //     res.json({ problems });
-// //   } catch (err) {
-// //     console.error(err);
-// //     res.status(500).json({ error: "Failed to submit vote" });
-// //   }
-// // });
-
-// // // POST /api/vote/create
-// // // Body: { userId, text }
-// // // Only Experts can create new voting options
-// // router.post("/create", async (req, res) => {
-// //   try {
-// //     const { userId, text } = req.body;
-
-// //     if (!userId || !text) {
-// //       return res.status(400).json({ error: "userId and text are required" });
-// //     }
-
-// //     // Find user and check if they are an Expert
-// //     const user = await User.findOne({ userId });
-// //     if (!user) {
-// //       return res.status(404).json({ error: "User not found" });
-// //     }
-
-// //     // Check if user role is "Expert" (case-sensitive match)
-// //     if (user.role !== "Expert") {
-// //       return res.status(403).json({ error: "Only Experts can create new voting options" });
-// //     }
-
-// //     // Find the highest problemId and increment it
-// //     const lastProblem = await Vote.findOne().sort({ problemId: -1 });
-// //     const newProblemId = lastProblem ? lastProblem.problemId + 1 : 1;
-
-// //     // Create new vote option
-// //     const newVote = new Vote({
-// //       problemId: newProblemId,
-// //       text: text,
-// //       upvotes: 0
-// //     });
-
-// //     await newVote.save();
-
-// //     // Return updated problems
-// //     const problems = await Vote.find({}).sort({ upvotes: -1 });
-// //     res.json({ problems, message: "Vote option created successfully" });
-// //   } catch (err) {
-// //     console.error(err);
-// //     res.status(500).json({ error: "Failed to create vote option" });
-// //   }
-// // });
-
-// // module.exports = router;
-
-
-
-
-
-
-
-// // // const express = require("express");
-// // // const Vote = require("../models/voteModel");
-// // // const UserVote = require("../models/uservotes");
-// // // const User = require("../models/userModel");
-
-// // // const router = express.Router();
-
-// // // // GET /api/vote?userId=...
-// // // // Returns all problems + user's previous vote (if any)
-// // // router.get("/", async (req, res) => {
-// // //   try {
-// // //     const userId = req.query.userId;
-// // //     const problems = await Vote.find({}).sort({ upvotes: -1 });
-
-// // //     let userVote = null;
-// // //     if (userId) {
-// // //       const vote = await UserVote.findOne({ userId });
-// // //       if (vote) userVote = vote.problemId;
-// // //     }
-
-// // //     res.json({ problems, userVote });
-// // //   } catch (err) {
-// // //     console.error(err);
-// // //     res.status(500).json({ error: "Failed to fetch votes" });
-// // //   }
-// // // });
-
-// // // // POST /api/vote
-// // // // Body: { userId, voteId }
-// // // router.post("/", async (req, res) => {
-// // //   try {
-// // //     const { userId, voteId } = req.body;
-
-// // //     if (!userId || !voteId) {
-// // //       return res.status(400).json({ error: "userId and voteId are required" });
-// // //     }
-
-// // //     // Check if user already voted
-// // //     const existingVote = await UserVote.findOne({ userId });
-// // //     if (existingVote) {
-// // //       return res.status(400).json({ error: "You have already voted" });
-// // //     }
-
-// // //     // Increment the vote count for the selected option
-// // //     const problem = await Vote.findOne({ problemId: voteId });
-// // //     if (!problem) return res.status(404).json({ error: "Vote option not found" });
-
-// // //     problem.upvotes += 1;
-// // //     await problem.save();
-
-// // //     // Save user's vote
-// // //     const userVote = new UserVote({ userId, problemId: voteId });
-// // //     await userVote.save();
-
-// // //     // Return updated problems
-// // //     const problems = await Vote.find({}).sort({ upvotes: -1 });
-// // //     res.json({ problems });
-// // //   } catch (err) {
-// // //     console.error(err);
-// // //     res.status(500).json({ error: "Failed to submit vote" });
-// // //   }
-// // // });
-
-// // // // POST /api/vote/create
-// // // // Body: { userId, text }
-// // // // Only experts can create new voting options
-// // // router.post("/create", async (req, res) => {
-// // //   try {
-// // //     const { userId, text } = req.body;
-
-// // //     if (!userId || !text) {
-// // //       return res.status(400).json({ error: "userId and text are required" });
-// // //     }
-
-// // //     // Find user and check if they are an expert
-// // //     const user = await User.findOne({ userId });
-// // //     if (!user) {
-// // //       return res.status(404).json({ error: "User not found" });
-// // //     }
-
-// // //     if (user.role !== "expert") {
-// // //       return res.status(403).json({ error: "Only experts can create new voting options" });
-// // //     }
-
-// // //     // Find the highest problemId and increment it
-// // //     const lastProblem = await Vote.findOne().sort({ problemId: -1 });
-// // //     const newProblemId = lastProblem ? lastProblem.problemId + 1 : 1;
-
-// // //     // Create new vote option
-// // //     const newVote = new Vote({
-// // //       problemId: newProblemId,
-// // //       text: text,
-// // //       upvotes: 0
-// // //     });
-
-// // //     await newVote.save();
-
-// // //     // Return updated problems
-// // //     const problems = await Vote.find({}).sort({ upvotes: -1 });
-// // //     res.json({ problems, message: "Vote option created successfully" });
-// // //   } catch (err) {
-// // //     console.error(err);
-// // //     res.status(500).json({ error: "Failed to create vote option" });
-// // //   }
-// // // });
-
-// // // module.exports = 
-// // // router;
-
-
-
-
-
-
-// const express = require("express");
-// const Vote = require("../models/voteModel");
-// const UserVote = require("../models/uservotes");
-
-// const router = express.Router();
-
-// // GET /api/vote?userId=...
-// // Returns all problems + user's previous vote (if any)
-// router.get("/", async (req, res) => {
-//   try {
-//     const userId = req.query.userId;
-//     const problems = await Vote.find({}).sort({ upvotes: -1 });
-
-//     let userVote = null;
-//     if (userId) {
-//       const vote = await UserVote.findOne({ userId });
-//       if (vote) userVote = vote.problemId;
-//     }
-
-//     res.json({ problems, userVote });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to fetch votes" });
-//   }
-// });
-
-// // POST /api/vote
-// // Body: { userId, voteId }
-// router.post("/", async (req, res) => {
-//   try {
-//     const { userId, voteId } = req.body;
-
-//     if (!userId || !voteId) {
-//       return res.status(400).json({ error: "userId and voteId are required" });
-//     }
-
-//     // Check if user already voted
-//     const existingVote = await UserVote.findOne({ userId });
-//     if (existingVote) {
-//       return res.status(400).json({ error: "You have already voted" });
-//     }
-
-//     // Increment the vote count for the selected option
-//     const problem = await Vote.findOne({ problemId: voteId });
-//     if (!problem) return res.status(404).json({ error: "Vote option not found" });
-
-//     problem.upvotes += 1;
-//     await problem.save();
-
-//     // Save user's vote
-//     const userVote = new UserVote({ userId, problemId: voteId });
-//     await userVote.save();
-
-//     // Return updated problems
-//     const problems = await Vote.find({}).sort({ upvotes: -1 });
-//     res.json({ problems });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to submit vote" });
-//   }
-// });
-
-// module.exports = router;
