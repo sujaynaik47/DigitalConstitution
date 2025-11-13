@@ -9,7 +9,6 @@ git merge main        # Get main's changes into your branch
 # Create new branch
 git checkout -b new-branch-name
 
-
 # Start all services
 docker-compose up
 
