@@ -2,15 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-
-// --- Import Routes ---
-// Assuming your chatbot route file is in './routes/chatBotRoutes.js'
-const chatbotRoutes = require("./routes/chatBotRoutes"); 
-// Assuming other routes are in your project structure
-const userRoutes = require("./routes/userRoutes"); 
-const postRoutes = require("./routes/postRoutes"); 
-const uservotes = require("./routes/uservotes");
+const userRoutes = require("./routes/userRoutes");
 const changePasswordController = require("./controllers/passwordChangeThroughProfile");
+const chatbotRoutes = require("./routes/chatBotRoutes"); // 👈 1. THIS LINE IS NEW
+const uservotes = require("./routes/uservotes");
+
 
 
 // --- Initialization ---
@@ -19,11 +15,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- Middleware ---
-// CRITICAL: Express JSON Body Parser to read req.body.message
-app.use(express.json()); 
-
-// CORS Configuration
+// ✅ CORS Configuration
 app.use(
   cors({
     origin: "http://localhost:5173", // your frontend (Vite) URL
@@ -33,16 +25,17 @@ app.use(
   })
 );
 
-// --- Routes ---
+app.use(express.json());
+
+// ✅ Routes
+const postRoutes = require("./routes/postRoutes");
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.post("/api/change-password", changePasswordController);
+app.use("/api/chat", chatbotRoutes); // 👈 2. THIS LINE IS NEW
 app.use("/api/vote", uservotes);
 
-// CRITICAL: Chatbot API endpoint - ensures frontend calls the correct path
-app.use("/api/chat", chatbotRoutes); 
-
-// --- MongoDB Connection ---
+// ✅ MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -55,11 +48,12 @@ mongoose
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:");
-    console.error(`    Message: ${err.message}`);
-    process.exit(1); // Exit on fatal DB connection failure
+    console.error(`   Message: ${err.message}`);
+    console.error(`   Name: ${err.name}`);
+    console.error(`   Stack: ${err.stack}`);
   });
 
-// --- Optional: Mongoose connection events (as you had them) ---
+// ✅ Mongo connection events
 mongoose.connection.on("connected", () => {
   console.log("🔗 Mongoose event: connected");
 });

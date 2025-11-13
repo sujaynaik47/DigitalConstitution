@@ -1,102 +1,55 @@
-// CSE_D_05\back-end\routes\chatBotRoutes.js
 const express = require("express");
 const dotenv = require("dotenv");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const path = require("path");
-const fs = require("fs");
 
-const router = express.Router();
 dotenv.config();
+const router = express.Router();
 
-// --- 1. Initialization and API Key Check ---
+// Ensure API key
 if (!process.env.GEMINI_API_KEY) {
   console.error("FATAL ERROR: GEMINI_API_KEY environment variable not set.");
   process.exit(1);
 }
 
+// Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// --- 2. Load Constitution JSON ---
-const constitutionPath = path.join(
-  __dirname,
-  "..",
-  "..",
-  "front-end",
-  "src",
-  "data",
-  "constitution.json"
-);
-
-let constitutionData = {};
-try {
-  const raw = fs.readFileSync(constitutionPath, "utf-8");
-  constitutionData = JSON.parse(raw);
-} catch (err) {
-  console.error("Error loading constitution.json:", err);
-}
-
-// --- 3. Persona and Knowledge Context ---
-const systemPrompt = `
-You are "NiyamAI", a highly knowledgeable AI assistant for the Digital Constitution Platform.
-You provide accurate, clear, and concise answers about:
-- Indian Constitution (Articles, Schedules, Amendments, significance)
-- Rights and Duties of citizens
-- Government structure and political processes
-- Historical and recent constitutional changes
-- Current civic and legal affairs
-- Features of the Digital Constitution Platform (Trending, Vote, Posts, Constitution, My Activity, Profile)
-`;
-
-const platformKnowledge = `
-Platform Knowledge:
-- Trending: Shows popular posts and discussions.
-- Vote: Users can create and participate in polls.
-- Posts: Section for civic and constitutional discussions.
-- Constitution: Full list of Articles (e.g., Preamble, Article 14, Article 21).
-- My Activity: Displays the logged-in user’s contributions and shared posts.
-- Profile: Allows users to view account details, change password, and log out.
-`;
-
-// --- 4. POST /chat Implementation ---
+// POST /api/chat
 router.post("/", async (req, res) => {
+  console.log("📩 Received:", req.body);
+
   try {
-    const userMessage = req.body.message?.trim();
-    if (!userMessage) {
+    const { message } = req.body;
+    if (!message || !message.trim()) {
       return res.status(400).json({ error: "Message is required." });
     }
 
-    // Check if user asked for a specific Article
-    let context = "";
-    const match = userMessage.match(/article\s*(\d+)/i);
-    if (match) {
-      const articleNum = match[1];
-      if (constitutionData[articleNum]) {
-        context = `Relevant Article Content:\n${constitutionData[articleNum]}`;
-      }
-    }
+    // Complete prompt (system + user input)
+    const prompt = `
+You are "NiyamAI", a highly knowledgeable AI assistant for the Digital Democracy Platform.
+You provide accurate, clear, and concise answers about the Indian Constitution, law, and governance.
 
-    // Use structured input for Gemini
-    const result = await model.generateContent([
-      { role: "system", parts: [{ text: systemPrompt }] },
-      { role: "system", parts: [{ text: platformKnowledge }] },
-      { role: "system", parts: [{ text: context }] },
-      { role: "user", parts: [{ text: userMessage }] }
-    ]);
+Rules:
+1. If the user greets you, reply politely.
+2. If the user asks "Who are you?", reply "I am NiyamAI, your Digital Democracy assistant."
+3. For questions about the Constitution, articles, amendments, or governance — give short, clear, factual answers.
+4. If question is unrelated (e.g., jokes, weather), say: "I'm here to help with constitutional, legal, or civic matters."
 
-    let answer = "";
-    try {
-      answer = result.response.text();
-    } catch {
-      answer = "I'm here to assist with topics related to the Indian Constitution and civic issues.";
-    }
+User: ${message}
+NiyamAI:
+`;
 
-    res.json({ answer });
+    // Generate Gemini response
+    const result = await model.generateContent(prompt);
+    const reply = result.response.text();
+
+    res.status(200).json({ answer: reply });
   } catch (error) {
-    console.error("Chatbot API Error:", error?.response || error);
+    console.error("Chatbot API Error:", error);
     res.status(500).json({
       error: "Failed to fetch response from NiyamAI.",
-      details: error.message || "Unknown error"
+      details: error.message,
     });
   }
 });

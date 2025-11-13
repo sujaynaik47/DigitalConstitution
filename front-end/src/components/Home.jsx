@@ -1,6 +1,6 @@
 // //Home.jsx
 
-import React, { useState, useEffect, useRef } from 'react'; // <-- Added useRef
+import React, { useState, useEffect, useRef } from 'react'; 
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -215,17 +215,17 @@ function usePrevious(value) {
 const slideVariants = {
   // 'custom' prop (our direction) is passed to these functions
   enter: (direction) => ({
-    x: direction > 0 ? '100%' : '-100%', // Enter from right or left
+    x: direction > 0 ? '100%' : '-100%',
     opacity: 0
   }),
   center: {
-    zIndex: 1, // Keep the new page on top
+    zIndex: 1,
     x: 0,
     opacity: 1
   },
   exit: (direction) => ({
-    zIndex: 0, // Put the old page behind
-    x: direction < 0 ? '100%' : '-100%', // Exit to right or left
+    zIndex: 0,
+    x: direction < 0 ? '100%' : '-100%',
     opacity: 0
   })
 };
@@ -299,7 +299,7 @@ const App = ({ user, onLogout }) => {
             animate="center"
             exit="exit"
             transition={isSliding ? slideTransition : fadeTransition}
-            className="w-full" // Ensure the div takes full width
+            className="w-full"
           >
             <Routes location={location}>
               {/* All routes are now plain, the wrapper handles the animation */}
