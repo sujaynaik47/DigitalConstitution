@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage.jsx';
-
 import Ap from './components/Home.jsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function App() {
   const [user, setUser] = useState(null); // null = logged out, {object} = logged in
@@ -11,6 +11,12 @@ export default function App() {
 
   // Simulate checking for a user session on load
   useEffect(() => {
+    // Check local storage for a user
+    const loggedInUser = localStorage.getItem('user');
+    if (loggedInUser) {
+      setUser(JSON.parse(loggedInUser));
+    }
+
     const timer = setTimeout(() => {
       setIsAuthReady(true);
     }, 500); // 0.5 second loading 
@@ -19,13 +25,15 @@ export default function App() {
   }, []);
 
   // This function is passed to LoginPage
-  const handleLogin = (fakeUser) => {
-    setUser(fakeUser);
+  const handleLogin = (loggedInUser) => {
+    setUser(loggedInUser);
+    // Note: The LoginPage already saves to localStorage
   };
 
   // This function is passed to LoggedInView
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('user');
   };
 
   if (!isAuthReady) {
@@ -40,8 +48,31 @@ export default function App() {
   }
 
   return (
-    <>
-  {user ? <Ap user={user} onLogout={handleLogout} /> : <LoginPage onLogin={handleLogin} />}
-    </>
+    // AnimatePresence is the wrapper that enables exit animations
+    <AnimatePresence mode="wait">
+      {user ? (
+        // --- This is your main app ---
+        <motion.div
+          key="main-app" // A unique key
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Ap user={user} onLogout={handleLogout} />
+        </motion.div>
+      ) : (
+        // --- This is your login page ---
+        <motion.div
+          key="login-page" // A unique key
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <LoginPage onLogin={handleLogin} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

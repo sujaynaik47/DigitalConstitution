@@ -1,6 +1,8 @@
 // LoginPage.jsx
 
 import React, { useEffect, useState } from 'react';
+// --- 1. IMPORT FRAMER MOTION ---
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- ICON COMPONENT ---
 const Icon = ({ name, className }) => {
@@ -202,6 +204,14 @@ const LoginPage = ({ onLogin }) => {
     else setExpertMode('login');
   };
 
+  // --- 2. DEFINE ANIMATION VARIANTS ---
+  const formVariants = {
+    hidden: { opacity: 0, x: -50, transition: { duration: 0.3 } },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: 50, transition: { duration: 0.3 } },
+  };
+
+
   // --- JSX ---
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4 font-sans">
@@ -244,50 +254,74 @@ const LoginPage = ({ onLogin }) => {
           </button>
         </div>
 
-        {/* Citizen (Google) */}
-        {loginType === 'citizen' && (
-          <div className="flex flex-col items-center">
-            <p className="text-center text-sm text-gray-700 mb-5">
-              Join the discussion using your Google account.
-            </p>
-            <div id="googleSignInDiv" className="w-full"></div>
-          </div>
-        )}
-
-        {/* Expert */}
-        {loginType === 'expert' && (
-          <form onSubmit={handleExpertSubmit}>
-            <p className="text-center text-sm text-gray-700 mb-5">{getExpertTitle()}</p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Verified Email</label>
-              <input type="email" id="email" name="email" required className="w-full px-4 py-2 border rounded" />
-            </div>
-
-            {expertMode !== 'forgot' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input type="password" id="password" name="password" required className="w-full px-4 py-2 border rounded" />
-              </div>
+        {/* --- 3. WRAP TAB CONTENT --- */}
+        {/* This div helps set a consistent height so the box doesn't jump */}
+        <div className="relative" style={{ minHeight: '250px' }}> 
+          <AnimatePresence mode="wait">
+            {/* Citizen (Google) */}
+            {loginType === 'citizen' && (
+              <motion.div
+                key="citizen"
+                variants={formVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="w-full" // Add this to prevent layout shift
+              >
+                <div className="flex flex-col items-center">
+                  <p className="text-center text-sm text-gray-700 mb-5">
+                    Join the discussion using your Google account.
+                  </p>
+                  <div id="googleSignInDiv" className="w-full"></div>
+                </div>
+              </motion.div>
             )}
 
-            {expertMode === 'signup' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                <input type="password" id="confirm-password" name="confirm-password" required className="w-full px-4 py-2 border rounded" />
-              </div>
+            {/* Expert */}
+            {loginType === 'expert' && (
+              <motion.div
+                key="expert"
+                variants={formVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="w-full" // Add this to prevent layout shift
+              >
+                <form onSubmit={handleExpertSubmit}>
+                  <p className="text-center text-sm text-gray-700 mb-5">{getExpertTitle()}</p>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Verified Email</label>
+                    <input type="email" id="email" name="email" required className="w-full px-4 py-2 border rounded" />
+                  </div>
+
+                  {expertMode !== 'forgot' && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                      <input type="password" id="password" name="password" required className="w-full px-4 py-2 border rounded" />
+                    </div>
+                  )}
+
+                  {expertMode === 'signup' && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                      <input type="password" id="confirm-password" name="confirm-password" required className="w-full px-4 py-2 border rounded" />
+                    </div>
+                  )}
+
+                  <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                    {getSubmitButtonText()}
+                  </button>
+
+                  <div className="text-center mt-4">
+                    <button type="button" onClick={toggleExpertMode} className="text-sm text-blue-600 hover:underline">
+                      {getToggleText()}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
             )}
-
-            <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-              {getSubmitButtonText()}
-            </button>
-
-            <div className="text-center mt-4">
-              <button type="button" onClick={toggleExpertMode} className="text-sm text-blue-600 hover:underline">
-                {getToggleText()}
-              </button>
-            </div>
-          </form>
-        )}
+          </AnimatePresence>
+        </div>
 
         {message && <p className="text-center text-sm text-blue-700 mt-4">{message}</p>}
       </div>
