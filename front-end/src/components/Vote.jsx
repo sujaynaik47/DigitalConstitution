@@ -322,13 +322,18 @@ const Vote = () => {
                   {poll.question}
                 </h2>
 
-                {poll.endTime && (
-                  <p className={`text-sm mb-4 font-medium ${
-                    pollEnded ? 'text-red-600' : 'text-blue-600'
-                  }`}>
-                    {pollEnded ? 'Ended: ' : 'Ends: '}{formatDateTime(poll.endTime)}
+                <div className="flex flex-col gap-1 mb-4">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Created:</span> {formatDateTime(poll.createdAt)}
                   </p>
-                )}
+                  {poll.endTime && (
+                    <p className={`text-sm font-medium ${
+                      pollEnded ? 'text-red-600' : 'text-blue-600'
+                    }`}>
+                      <span className="font-semibold">{pollEnded ? '🔒 Ended:' : '⏰ Ends:'}</span> {formatDateTime(poll.endTime)}
+                    </p>
+                  )}
+                </div>
 
                 <div className="space-y-3 mb-4">
                   {poll.options.map((option) => {
