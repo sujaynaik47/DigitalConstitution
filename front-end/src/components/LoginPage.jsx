@@ -1,35 +1,49 @@
 // LoginPage.jsx
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import preambleImage from "../assets/preamble.jpg"; // ✅ Make sure this image path exists
 
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-// This import will now work once you've added the file
-import preambleImage from '../assets/preamble.jpg'; 
-
-// --- ICON COMPONENT (No changes) ---
+// --- ICON COMPONENT ---
 const Icon = ({ name, className }) => {
-  if (name === 'google') {
+  if (name === "google") {
     return (
-      <svg className={className} xmlns="http://www.w.3.org/2000/svg" viewBox="0 0 48 48">
-        <path fill="#FFC107" d="M43.6 20.4H24v7.9h10.9c-.8 5-4.7 8.5-10.9 8.5-6.6 0-12-5.4-12-12s5.4-12 12-12c3.4 0 6.4 1.4 8.6 3.6l5.9-5.9C36.6 5.8 30.7 3 24 3 13.5 3 4.8 11.7 4.8 22s8.7 19 19.2 19c11.3 0 19.5-8.5 19.5-18.7 0-1.2-.2-2.3-.4-3.4z"/>
-        <path fill="#FF3D00" d="M6.5 22c0-2.4.6-4.7 1.7-6.7l-6-4.6C1.9 14.8 1 18.2 1 22s.9 7.2 2.2 10.3l6-4.6c-1-2-1.7-4.3-1.7-6.7z"/>
-        <path fill="#4CAF50" d="M24 41c5.9 0 10.9-2.4 14.5-6.5l-6-4.6c-1.9 2.4-4.7 3.9-8.5 3.9-6.6 0-12-5.4-12-12h-6c0 10.5 8.7 19 19.2 19z"/>
-        <path fill="#1976D2" d="M43.6 20.4c.1 1.2.2 2.3.2 3.4 0 1.2-.1 2.4-.3 3.5H24v-7.9h19.6c.1.9.2 1.9.2 3.4z"/>
+      <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 48 48"
+      >
+        <path
+          fill="#FFC107"
+          d="M43.6 20.4H24v7.9h10.9c-.8 5-4.7 8.5-10.9 8.5-6.6 0-12-5.4-12-12s5.4-12 12-12c3.4 0 6.4 1.4 8.6 3.6l5.9-5.9C36.6 5.8 30.7 3 24 3 13.5 3 4.8 11.7 4.8 22s8.7 19 19.2 19c11.3 0 19.5-8.5 19.5-18.7 0-1.2-.2-2.3-.4-3.4z"
+        />
+        <path
+          fill="#FF3D00"
+          d="M6.5 22c0-2.4.6-4.7 1.7-6.7l-6-4.6C1.9 14.8 1 18.2 1 22s.9 7.2 2.2 10.3l6-4.6c-1-2-1.7-4.3-1.7-6.7z"
+        />
+        <path
+          fill="#4CAF50"
+          d="M24 41c5.9 0 10.9-2.4 14.5-6.5l-6-4.6c-1.9 2.4-4.7 3.9-8.5 3.9-6.6 0-12-5.4-12-12h-6c0 10.5 8.7 19 19.2 19z"
+        />
+        <path
+          fill="#1976D2"
+          d="M43.6 20.4c.1 1.2.2 2.3.2 3.4 0 1.2-.1 2.4-.3 3.5H24v-7.9h19.6c.1.9.2 1.9.2 3.4z"
+        />
       </svg>
     );
   }
   return <div className={className}></div>;
 };
 
-// --- UTILITY TO DECODE GOOGLE TOKEN (No changes) ---
+// --- UTILITY: Decode Google JWT Token ---
 const decodeJwtToken = (token) => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
     return JSON.parse(jsonPayload);
   } catch (e) {
@@ -40,13 +54,14 @@ const decodeJwtToken = (token) => {
 
 // --- MAIN LOGIN COMPONENT ---
 const LoginPage = ({ onLogin }) => {
-  const [loginType, setLoginType] = useState('citizen');
-  const [expertMode, setExpertMode] = useState('login');
-  const [message, setMessage] = useState('Please sign in to continue.');
+  const [loginType, setLoginType] = useState("citizen");
+  const [expertMode, setExpertMode] = useState("login");
+  const [message, setMessage] = useState("Please sign in to continue.");
 
-  const GOOGLE_CLIENT_ID = "643839752757-02lgp6m87gddf941rr30vi8u4jfibgni.apps.googleusercontent.com";
+  const GOOGLE_CLIENT_ID =
+    "643839752757-02lgp6m87gddf941rr30vi8u4jfibgni.apps.googleusercontent.com";
 
-  // ... (All logic functions remain unchanged) ...
+  // --- GOOGLE LOGIN HANDLER ---
   const handleGoogleResponse = async (response) => {
     const userObject = decodeJwtToken(response.credential);
     console.log("Google User:", userObject);
@@ -60,32 +75,33 @@ const LoginPage = ({ onLogin }) => {
           picture: userObject.picture,
         }),
       });
+
       const data = await res.json();
-      if (!res.ok) {
-        alert(data.message || "Google login failed");
-        return;
-      }
+      if (!res.ok) return alert(data.message || "Google login failed");
+
       console.log("Backend response user data:", data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem("user", JSON.stringify(data.user));
       setMessage(`Welcome, ${data.user.name || userObject.name}!`);
-      onLogin({ 
-        displayName: data.user.name || userObject.name, 
+      onLogin({
+        displayName: data.user.name || userObject.name,
         email: data.user.email,
-        userId: data.user.userId 
+        userId: data.user.userId,
       });
     } catch (error) {
       console.error("Google Login Error:", error);
       alert("Error connecting to backend");
     }
   };
+
+  // --- GOOGLE LOGIN BUTTON INITIALIZATION ---
   useEffect(() => {
-    if (loginType !== 'citizen') return;
+    if (loginType !== "citizen") return;
     const loadGoogleScript = () => {
       if (window.google) {
         initializeGSI();
         return;
       }
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
@@ -106,12 +122,15 @@ const LoginPage = ({ onLogin }) => {
     };
     loadGoogleScript();
   }, [loginType]);
+
+  // --- EXPERT LOGIN / SIGNUP ---
   const handleExpertSubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password?.value;
+
     try {
-      if (expertMode === 'login') {
+      if (expertMode === "login") {
         const res = await fetch("http://localhost:5000/api/users/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -119,32 +138,33 @@ const LoginPage = ({ onLogin }) => {
         });
         const data = await res.json();
         if (!res.ok) return alert(data.message || "Login failed");
-        console.log("Backend response user data:", data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
+
+        localStorage.setItem("user", JSON.stringify(data.user));
         setMessage("Login successful!");
-        onLogin({ 
-          displayName: data.user.name || "Expert User", 
+        onLogin({
+          displayName: data.user.name || "Expert User",
           email: data.user.email,
-          userId: data.user.userId 
+          userId: data.user.userId,
         });
-      } else if (expertMode === 'signup') {
-        const confirmPassword = e.target['confirm-password'].value;
+      } else if (expertMode === "signup") {
+        const confirmPassword = e.target["confirm-password"].value;
         if (password !== confirmPassword)
           return alert("Passwords do not match!");
+
         const res = await fetch("http://localhost:5000/api/users/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name: email.split('@')[0] }),
+          body: JSON.stringify({ email, password, name: email.split("@")[0] }),
         });
         const data = await res.json();
         if (!res.ok) return alert(data.message || "Signup failed");
-        console.log("Backend response user data:", data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
+
+        localStorage.setItem("user", JSON.stringify(data.user));
         setMessage("Registration successful!");
-        onLogin({ 
-          displayName: data.user.name || "New Expert", 
+        onLogin({
+          displayName: data.user.name || "New Expert",
           email: data.user.email,
-          userId: data.user.userId 
+          userId: data.user.userId,
         });
       }
     } catch (err) {
@@ -152,43 +172,51 @@ const LoginPage = ({ onLogin }) => {
       alert("Error connecting to backend");
     }
   };
-  const getExpertTitle = () => expertMode === 'login' ? 'Login using your verified credentials.' : 'Create your verified expert account.';
-  const getSubmitButtonText = () => expertMode === 'login' ? 'Login as Expert' : 'Register Expert Account';
-  const getToggleText = () => expertMode === 'login' ? "Expert or Lawmaker? Request a verified account." : "Already verified? Login here.";
-  const toggleExpertMode = () => { if (expertMode === 'login') setExpertMode('signup'); else setExpertMode('login'); };
+
+  // --- TEXT HELPERS ---
+  const getExpertTitle = () =>
+    expertMode === "login"
+      ? "Login using your verified credentials."
+      : "Create your verified expert account.";
+  const getSubmitButtonText = () =>
+    expertMode === "login" ? "Login as Expert" : "Register Expert Account";
+  const getToggleText = () =>
+    expertMode === "login"
+      ? "Expert or Lawmaker? Request a verified account."
+      : "Already verified? Login here.";
+  const toggleExpertMode = () =>
+    setExpertMode(expertMode === "login" ? "signup" : "login");
+
   const formVariants = {
     hidden: { opacity: 0, x: -50, transition: { duration: 0.3 } },
     visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
     exit: { opacity: 0, x: 50, transition: { duration: 0.3 } },
   };
 
-
-  // --- MODIFIED JSX RETURN ---
+  // --- JSX RETURN ---
   return (
-    // 1. TOP-LEVEL CONTAINER: Full screen, flex, with background image
-    <div 
-      className="flex min-h-screen font-sans bg-cover bg-center"
-      style={{ backgroundImage: `url(${preambleImage})` }}
-    >
-      
-      {/* 2. LEFT SIDE (60%) - EMPTY SPACER */}
-      {/* This div is hidden on mobile, and takes 3/5 (60%) width on desktop */}
-      {/* It's just empty space, letting the background image show through */}
-      <div className="hidden md:block md:w-3/5">
-        {/* You could put the title text back in here if you want */}
-         <div className="flex items-center justify-center h-full">
-           <h1 className="text-white text-7xl font-bold text-center drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.7)'}}>
-             Digital<br/>Constitution<br/>Platform
-           </h1>
-         </div>
+    <div className="flex min-h-screen font-sans">
+      {/* LEFT SIDE */}
+      <div className="hidden md:block md:w-3/5 relative">
+        <img
+          src={preambleImage}
+          alt="The Constitution of India Preamble on an Indian flag"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black opacity-30"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <h1 className="text-white text-7xl font-bold text-center drop-shadow-lg">
+            Digital
+            <br />
+            Constitution
+            <br />
+            Platform
+          </h1>
+        </div>
       </div>
 
-      {/* 3. RIGHT SIDE (40%) - LOGIN FORM */}
-      {/* This div takes full width on mobile, 2/5 (40%) on desktop */}
-      {/* It has a translucent background to "blur" the image behind it */}
-      <div className="w-full md:w-2/5 bg-gray-100 bg-opacity-90 backdrop-blur-sm flex flex-col justify-center items-center p-4 overflow-y-auto">
-        
-        {/* This is your original white box */}
+      {/* RIGHT SIDE */}
+      <div className="w-full md:w-2/5 bg-gray-100 flex flex-col justify-center items-center p-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 flex">
             <div className="w-1/3 h-full bg-orange-500"></div>
@@ -205,33 +233,39 @@ const LoginPage = ({ onLogin }) => {
             <h1 className="text-2xl font-bold text-blue-900 text-center">
               Digital Constitution Platform
             </h1>
-            <p className="text-sm text-gray-600 mt-1">A Platform for Civic Engagement</p>
+            <p className="text-sm text-gray-600 mt-1">
+              A Platform for Civic Engagement
+            </p>
           </div>
 
-          {/* Tabs (No change) */}
+          {/* Tabs */}
           <div className="flex mb-6 rounded-lg bg-gray-100 p-1">
             <button
-              onClick={() => setLoginType('citizen')}
+              onClick={() => setLoginType("citizen")}
               className={`w-1/2 p-2 rounded-md font-semibold text-sm transition-all duration-300 ${
-                loginType === 'citizen' ? 'bg-white shadow text-blue-800' : 'text-gray-600 hover:bg-gray-200'
+                loginType === "citizen"
+                  ? "bg-white shadow text-blue-800"
+                  : "text-gray-600 hover:bg-gray-200"
               }`}
             >
               Citizen
             </button>
             <button
-              onClick={() => setLoginType('expert')}
+              onClick={() => setLoginType("expert")}
               className={`w-1/2 p-2 rounded-md font-semibold text-sm transition-all duration-300 ${
-                loginType === 'expert' ? 'bg-white shadow text-blue-800' : 'text-gray-600 hover:bg-gray-200'
+                loginType === "expert"
+                  ? "bg-white shadow text-blue-800"
+                  : "text-gray-600 hover:bg-gray-200"
               }`}
             >
               Expert / Lawmaker
             </button>
           </div>
 
-          {/* Animated Tab Content (No change) */}
-          <div className="relative" style={{ minHeight: '250px' }}> 
+          {/* Animated Forms */}
+          <div className="relative" style={{ minHeight: "250px" }}>
             <AnimatePresence mode="wait">
-              {loginType === 'citizen' && (
+              {loginType === "citizen" && (
                 <motion.div
                   key="citizen"
                   variants={formVariants}
@@ -249,7 +283,7 @@ const LoginPage = ({ onLogin }) => {
                 </motion.div>
               )}
 
-              {loginType === 'expert' && (
+              {loginType === "expert" && (
                 <motion.div
                   key="expert"
                   variants={formVariants}
@@ -259,28 +293,65 @@ const LoginPage = ({ onLogin }) => {
                   className="w-full"
                 >
                   <form onSubmit={handleExpertSubmit}>
-                    <p className="text-center text-sm text-gray-700 mb-5">{getExpertTitle()}</p>
+                    <p className="text-center text-sm text-gray-700 mb-5">
+                      {getExpertTitle()}
+                    </p>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Verified Email</label>
-                      <input type="email" id="email" name="email" required className="w-full px-4 py-2 border rounded" />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Verified Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        className="w-full px-4 py-2 border rounded"
+                      />
                     </div>
-                    {expertMode !== 'forgot' && (
+
+                    {expertMode !== "forgot" && (
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" id="password" name="password" required className="w-full px-4 py-2 border rounded" />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          id="password"
+                          name="password"
+                          required
+                          className="w-full px-4 py-2 border rounded"
+                        />
                       </div>
                     )}
-                    {expertMode === 'signup' && (
+
+                    {expertMode === "signup" && (
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                        <input type="password" id="confirm-password" name="confirm-password" required className="w-full px-4 py-2 border rounded" />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Confirm Password
+                        </label>
+                        <input
+                          type="password"
+                          id="confirm-password"
+                          name="confirm-password"
+                          required
+                          className="w-full px-4 py-2 border rounded"
+                        />
                       </div>
                     )}
-                    <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+
+                    <button
+                      type="submit"
+                      className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                    >
                       {getSubmitButtonText()}
                     </button>
+
                     <div className="text-center mt-4">
-                      <button type="button" onClick={toggleExpertMode} className="text-sm text-blue-600 hover:underline">
+                      <button
+                        type="button"
+                        onClick={toggleExpertMode}
+                        className="text-sm text-blue-600 hover:underline"
+                      >
                         {getToggleText()}
                       </button>
                     </div>
@@ -290,15 +361,15 @@ const LoginPage = ({ onLogin }) => {
             </AnimatePresence>
           </div>
 
-          {message && <p className="text-center text-sm text-blue-700 mt-4">{message}</p>}
+          {message && (
+            <p className="text-center text-sm text-blue-700 mt-4">{message}</p>
+          )}
         </div>
 
-        {/* This is your original footer, now part of the right side */}
         <footer className="text-center mt-8 text-xs text-gray-600">
           <p>© 2025 Digital Constitution Platform. All rights reserved.</p>
         </footer>
       </div>
-
     </div>
   );
 };
