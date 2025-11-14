@@ -333,10 +333,3 @@ const App = ({ user, onLogout }) => {
 };
 
 export default App;
-
-// /*
-// ==================== HOW NAVIGATION & RENDERING WORK ====================
-// (This part is just comments, no changes needed)
-// ...
-// =========================================================================
-// */
