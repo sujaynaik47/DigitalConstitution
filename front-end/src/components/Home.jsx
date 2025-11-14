@@ -89,7 +89,7 @@ const NavBar = ({ user, onLogout }) => {
               className="flex items-center space-x-2 text-white text-xl font-bold"
             >
               <Icon name="bookOpen" className="text-2xl text-orange-400" />
-              <span>Digital Constitution Forum</span>
+              <span>Digital Constitution Platform</span>
             </button>
           </div>
           
